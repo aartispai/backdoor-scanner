@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+data/
+zoo/
+zoo_cifar/
+zoo_synth/
