@@ -1,47 +1,112 @@
-# Backdoor Scanner for Pretrained Models
+# Backdoor Scanner for Image Classifiers
 
-Multi-stage, trigger-agnostic scanner (white-box weights, no training data, no knowledge of the trigger).
-Use case (SDG 9): securing AI visual-inspection models used on manufacturing lines.
+A research prototype for inspecting image-classification models for possible backdoors. It combines behavioral tests, activation analysis, and trigger search, then aggregates their evidence into a verdict and report.
 
-## Pipeline
-| Stage | Module | Techniques |
+The scanner analyzes a model using a clean reference dataset; it does not need the model's original training set or prior knowledge of its trigger. Results are indicators for investigation, not a guarantee that a model is safe.
+
+## How it works
+
+| Stage | Module | What it checks |
 |---|---|---|
-| 1 Behavioural | `bds/behavioral.py` | random-patch hijack / class-skew sweep, STRIP entropy test |
-| 2 Activation | `bds/activation.py` | ABS-style neuron elevation, spectral signatures, activation clustering |
-| 3 Trigger search | `bds/trigger.py` | Neural Cleanse mask+pattern optimisation, MAD anomaly index, **attack success at a fixed 3% pixel budget vs the median class** (`nc_asr_gap`) |
-| 4 Aggregation | `bds/aggregate.py`, `bds/report.py` | calibrated logistic regression (or rule-based fallback), explainable JSON/MD report + trigger image |
+| Behavioral tests | `bds/behavioral.py` | Whether random patches cause class-skew and whether a candidate trigger survives STRIP-style input blending. |
+| Activation analysis | `bds/activation.py` | Neuron elevation and whether activations for triggered inputs stand out from genuine inputs. |
+| Trigger search | `bds/trigger.py` | Optimizes candidate triggers for each target class, then compares mask anomalies and attack success against other classes. |
+| Evidence aggregation | `bds/aggregate.py` | Combines the detector features into a backdoor score using a zoo-trained logistic-regression model, or a built-in heuristic if no aggregator is available. |
+| Reporting | `bds/report.py` | Produces a verdict, per-detector evidence, reconstructed-trigger image, and JSON/Markdown reports. |
 
-Stage 3's candidate trigger is cross-checked by STRIP and by the activation tests (stage "Cross-validating candidate trigger").
+The scanner gathers evidence; the aggregator scores that evidence. The aggregator does not inspect model weights or search for triggers by itself.
 
-## Setup
-    pip install -r requirements.txt
+## Requirements and setup
 
-## 1. Build the zoo and calibrate (this is where false positives get tuned)
-    python make_zoo.py --dataset cifar10 --n-train 50000 --epochs 15 --out zoo_cifar          # easy zoo
-    python make_zoo.py --dataset cifar10 --n-train 50000 --epochs 15 --hard \
-           --archs smallcnn,resnet18 --attacks patch,blend,warp --n-clean 12 --n-bd 18 --out zoo_hard
-`--hard` adds low poison rates (2-10%), 2-4 px patches and **hard-negative clean models** (augmented, fine-tuned);
-`warp` is a WaNet-style non-patch trigger (may be dropped automatically if the backdoor does not implant).
-Use a separate `--out` folder per run. Runs are resumable and scan features are cached.
+Python 3.10 or newer is recommended.
 
-Printed evaluation (also saved in `<out>/features_eval.json`):
-- cross-validated ensemble AUC (averaged over 5 shuffles), FPR/TPR at 0.5
-- **TPR at FPR<=0%/5%** plus the score threshold that achieves it
-- ablations: per stage group **and per single feature**, plus single-feature AUCs and Neural-Cleanse-only / STRIP-only baselines
-- **leave-one-attack-out**: train on some attack types, test on the held-out one (the real test of trigger-agnostic detection)
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 
-Changing detector features? Bump `FEAT_VERSION` in `make_zoo.py` so cached scans are recomputed, and re-run to refit `aggregator.joblib`.
+The application supports CIFAR-10, GTSRB, and a synthetic dataset. CIFAR-10 and GTSRB are downloaded automatically by the dataset loader when first used. The datasets are stored under `data/`, which is excluded from Git.
 
-External benchmarks (BackdoorBench / TrojAI): export models as `state_dict` .pt files in a folder with
-`labels.json` like `{"m1.pt": {"backdoor": true, "attack": "badnets", "arch": "resnet18"}, "m2.pt": {"backdoor": false}}`, then
-`python make_zoo.py --zoo-dir that_folder --dataset cifar10`.
+## Build a model zoo and calibrate the scanner
 
-## 2. Scan a model
-    python scan.py zoo/bd_9.pt --dataset cifar10          # CLI report in ./reports
-    streamlit run app.py                                   # Upload Model -> Report demo
+Build a default CIFAR-10 zoo:
 
-## Notes
-- Models load with `torch.load(weights_only=True)`; full-pickle models need `--allow-pickle` (unsafe, can execute code).
-- Without `zoo/aggregator.joblib` the scanner falls back to an uncalibrated heuristic and says so in the report.
-- Scope: image classifiers. Add architectures in `bds/models.py:build`. Thresholds in `report.py:evidence` are display defaults; the calibrated ensemble is what decides.
-- Known limits: input-space triggers only (weight-space/feature-space attacks like WaNet are the next extension); clean models can have natural adversarial patches, which is why evidence is aggregated and calibrated rather than any single detector deciding.
+```powershell
+python make_zoo.py --dataset cifar10 --out zoo
+```
+
+This trains clean and backdoored sample models, scans them, and fits the evidence aggregator. Backdoored models that do not reach the required attack success rate are retrained and may be dropped. By default, the script uses 8 clean models, 9 backdoored models, 8 training epochs, 10,000 training examples, 500 scan examples, and 200 trigger-search steps.
+
+For a more varied zoo with multiple architectures, attacks, and harder clean examples:
+
+```powershell
+python make_zoo.py --dataset cifar10 --hard `
+  --archs smallcnn,resnet18 --attacks patch,blend,warp `
+  --n-clean 12 --n-bd 18 --out zoo_hard
+```
+
+The zoo directory contains model weights and metadata, plus:
+
+- `aggregator.joblib` — fitted model used to combine scanner evidence.
+- `features_eval.json` — evaluation metrics for that zoo.
+- `features_cache.json` — cached scan features so reruns can reuse completed scans.
+- `labels.json` — model labels and training metadata.
+
+Runs can resume from saved models and cached features. Use a separate output directory for each experiment. Evaluation metrics depend on the models and attacks in the zoo; they are not a guarantee of performance on every real-world model.
+
+To use an external zoo, provide model `state_dict` files and a `labels.json` in the same directory:
+
+```json
+{
+  "model_a.pt": {"backdoor": true, "attack": "badnets", "arch": "resnet18"},
+  "model_b.pt": {"backdoor": false, "arch": "smallcnn"}
+}
+```
+
+Then run:
+
+```powershell
+python make_zoo.py --zoo-dir path\to\external-zoo --dataset cifar10
+```
+
+Each entry must include `backdoor`; `arch` is optional and defaults to the `--arch` value (which defaults to `smallcnn`). The model files must be compatible state dictionaries.
+
+## Scan a model from the command line
+
+```powershell
+python scan.py zoo\bd_8.pt --dataset cifar10 --arch smallcnn `
+  --aggregator zoo\aggregator.joblib
+```
+
+The command scans the selected model using clean reference examples, prints a verdict and detector evidence, and writes reports to `reports/` by default. If the aggregator file is missing, it uses an **uncalibrated heuristic** instead. You can set `--out`, `--n-clean`, and `--steps` to change the report directory, number of clean reference examples, and trigger-search effort. Run `python scan.py --help` for all options.
+
+The default dataset is `cifar10`, the default architecture is `smallcnn`, and the default aggregator path is `zoo/aggregator.joblib`.
+
+## Try it in Streamlit
+
+```powershell
+streamlit run app.py
+```
+
+Choose the reference dataset and architecture, leave the aggregator path as `zoo/aggregator.joblib` (or enter another path), and upload a `.pt` or `.pth` model state dictionary. To try one of the sample models in `zoo/`, select that file in the upload control. The app does not automatically choose a model from the zoo.
+
+For a calibrated score, generate and keep `zoo/aggregator.joblib` alongside the sample models. If it is absent, the app displays a score from the uncalibrated heuristic. The Streamlit app displays the report and lets you download its JSON data.
+
+## Repository contents
+
+- `app.py` — Streamlit interface.
+- `scan.py` — command-line scanner.
+- `make_zoo.py` — model-zoo generation, feature extraction, evaluation, and aggregator calibration.
+- `bds/` — scanner stages, model/dataset helpers, aggregation, and reporting.
+- `zoo/` — sample model weights for trying scans; `make_zoo.py` generates the aggregator and other zoo outputs.
+- `requirements.txt` — Python dependencies.
+
+The root `.gitignore` excludes local environments, caches, datasets, and experiment output directories. The `zoo/` sample models are intentionally not ignored so they can be included in the repository. Review the staged files before pushing, especially if you add larger datasets or generated experiment directories.
+
+## Safety and limitations
+
+- Only use models and aggregators from sources you trust. Model state dictionaries are loaded with `weights_only=True`; the CLI's `--allow-pickle` option is unsafe for untrusted full-model pickle files.
+- `aggregator.joblib` is a serialized Python object. Only load it from a trusted source.
+- Backdoored sample models are intentionally poisoned test artifacts. Label them clearly and do not deploy them.
+- This project targets image classifiers and input-space triggers. Detection is imperfect: clean models may respond strongly to natural patches, and some backdoors may evade these tests. Treat results as screening evidence and review suspicious models further.
