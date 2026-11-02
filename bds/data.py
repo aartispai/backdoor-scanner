@@ -1,5 +1,5 @@
 """Datasets, trigger injection (BadNets patch / blended) and poisoning."""
-import torch
+import torch, torch.nn.functional as F
 
 def _synthetic(n=4000, nc=10, seed=0):
     g = torch.Generator().manual_seed(seed)
@@ -34,6 +34,13 @@ def apply_trigger(x, kind="patch", size=3):
     elif kind == "blend":    # Blended: fixed noise pattern, alpha=0.2
         n = torch.rand(1, *x.shape[1:], generator=torch.Generator().manual_seed(1234))
         x = 0.8 * x + 0.2 * n
+    elif kind == "warp":     # WaNet-style: fixed smooth sub-pixel warp, no visible patch. size = strength
+        H, W = x.shape[-2:]; g = torch.Generator().manual_seed(4321)
+        flow = F.interpolate(torch.rand(1, 2, 4, 4, generator=g) * 2 - 1, size=(H, W), mode="bicubic", align_corners=True)
+        flow = flow / flow.abs().mean() * (size or 3.0) / H
+        ys, xs = torch.meshgrid(torch.linspace(-1, 1, H), torch.linspace(-1, 1, W), indexing="ij")
+        grid = (torch.stack([xs, ys], -1)[None] + flow.permute(0, 2, 3, 1)).clamp(-1, 1)
+        x = F.grid_sample(x, grid.expand(len(x), -1, -1, -1), padding_mode="border", align_corners=True).clamp(0, 1)
     return x
 
 def poison(X, y, target, kind="patch", rate=0.1, size=3, seed=0):

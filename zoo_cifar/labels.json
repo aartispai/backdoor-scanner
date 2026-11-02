@@ -1,0 +1,97 @@
+{
+ "clean_0.pt": {
+  "backdoor": false,
+  "clean_acc": 0.7039999961853027
+ },
+ "clean_1.pt": {
+  "backdoor": false,
+  "clean_acc": 0.6980000138282776
+ },
+ "clean_2.pt": {
+  "backdoor": false,
+  "clean_acc": 0.6779999732971191
+ },
+ "clean_3.pt": {
+  "backdoor": false,
+  "clean_acc": 0.6669999957084656
+ },
+ "clean_4.pt": {
+  "backdoor": false,
+  "clean_acc": 0.6890000104904175
+ },
+ "clean_5.pt": {
+  "backdoor": false,
+  "clean_acc": 0.6869999766349792
+ },
+ "clean_6.pt": {
+  "backdoor": false,
+  "clean_acc": 0.6959999799728394
+ },
+ "clean_7.pt": {
+  "backdoor": false,
+  "clean_acc": 0.699999988079071
+ },
+ "bd_8.pt": {
+  "backdoor": true,
+  "attack": "patch",
+  "target": 3,
+  "clean_acc": 0.6309999823570251,
+  "asr": 1.0
+ },
+ "bd_9.pt": {
+  "backdoor": true,
+  "attack": "patch",
+  "target": 7,
+  "clean_acc": 0.6740000247955322,
+  "asr": 0.9990000128746033
+ },
+ "bd_10.pt": {
+  "backdoor": true,
+  "attack": "blend",
+  "target": 9,
+  "clean_acc": 0.6759999990463257,
+  "asr": 0.9950000047683716
+ },
+ "bd_11.pt": {
+  "backdoor": true,
+  "attack": "patch",
+  "target": 7,
+  "clean_acc": 0.6819999814033508,
+  "asr": 1.0
+ },
+ "bd_12.pt": {
+  "backdoor": true,
+  "attack": "patch",
+  "target": 7,
+  "clean_acc": 0.6830000281333923,
+  "asr": 1.0
+ },
+ "bd_13.pt": {
+  "backdoor": true,
+  "attack": "blend",
+  "target": 4,
+  "clean_acc": 0.6639999747276306,
+  "asr": 1.0
+ },
+ "bd_14.pt": {
+  "backdoor": true,
+  "attack": "patch",
+  "target": 1,
+  "clean_acc": 0.7099999785423279,
+  "asr": 1.0
+ },
+ "bd_15.pt": {
+  "backdoor": true,
+  "attack": "patch",
+  "target": 3,
+  "clean_acc": 0.6809999942779541,
+  "asr": 0.9980000257492065
+ },
+ "bd_16.pt": {
+  "backdoor": true,
+  "attack": "blend",
+  "target": 5,
+  "clean_acc": 0.652999997138977,
+  "asr": 1.0
+ }
+}

@@ -1,0 +1,254 @@
+{
+ "clean_0.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "plain",
+  "clean_acc": 0.7020000219345093
+ },
+ "clean_1.pt": {
+  "backdoor": false,
+  "arch": "smallcnn",
+  "variant": "aug",
+  "clean_acc": 0.6949999928474426
+ },
+ "clean_2.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "finetune",
+  "clean_acc": 0.7300000190734863
+ },
+ "clean_3.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "plain",
+  "clean_acc": 0.7369999885559082
+ },
+ "clean_4.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "aug",
+  "clean_acc": 0.7749999761581421
+ },
+ "clean_5.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "finetune",
+  "clean_acc": 0.765999972820282
+ },
+ "clean_6.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "plain",
+  "clean_acc": 0.7440000176429749
+ },
+ "clean_7.pt": {
+  "backdoor": false,
+  "arch": "smallcnn",
+  "variant": "aug",
+  "clean_acc": 0.6710000038146973
+ },
+ "clean_8.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "finetune",
+  "clean_acc": 0.7480000257492065
+ },
+ "clean_9.pt": {
+  "backdoor": false,
+  "arch": "smallcnn",
+  "variant": "plain",
+  "clean_acc": 0.675000011920929
+ },
+ "clean_10.pt": {
+  "backdoor": false,
+  "arch": "smallcnn",
+  "variant": "aug",
+  "clean_acc": 0.6470000147819519
+ },
+ "clean_11.pt": {
+  "backdoor": false,
+  "arch": "resnet18",
+  "variant": "finetune",
+  "clean_acc": 0.7570000290870667
+ },
+ "bd_12.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "patch",
+  "target": 2,
+  "size": 2,
+  "rate": 0.05,
+  "clean_acc": 0.7490000128746033,
+  "asr": 0.9990000128746033
+ },
+ "bd_13.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "blend",
+  "target": 4,
+  "size": 0,
+  "rate": 0.02,
+  "clean_acc": 0.7369999885559082,
+  "asr": 0.9750000238418579
+ },
+ "bd_14.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "warp",
+  "target": 4,
+  "size": 2,
+  "rate": 0.1,
+  "clean_acc": 0.671999990940094,
+  "asr": 0.8489999771118164
+ },
+ "bd_15.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "patch",
+  "target": 7,
+  "size": 3,
+  "rate": 0.02,
+  "clean_acc": 0.7039999961853027,
+  "asr": 1.0
+ },
+ "bd_16.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "blend",
+  "target": 6,
+  "size": 0,
+  "rate": 0.02,
+  "clean_acc": 0.7310000061988831,
+  "asr": 0.9819999933242798
+ },
+ "bd_17.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "warp",
+  "target": 6,
+  "size": 4,
+  "rate": 0.1,
+  "clean_acc": 0.7250000238418579,
+  "asr": 0.9860000014305115
+ },
+ "bd_18.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "patch",
+  "target": 6,
+  "size": 4,
+  "rate": 0.02,
+  "clean_acc": 0.7429999709129333,
+  "asr": 1.0
+ },
+ "bd_19.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "blend",
+  "target": 5,
+  "size": 0,
+  "rate": 0.1,
+  "clean_acc": 0.6769999861717224,
+  "asr": 1.0
+ },
+ "bd_20.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "warp",
+  "target": 7,
+  "size": 2,
+  "rate": 0.05,
+  "clean_acc": 0.7080000042915344,
+  "asr": 0.8859999775886536
+ },
+ "bd_21.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "patch",
+  "target": 3,
+  "size": 4,
+  "rate": 0.05,
+  "clean_acc": 0.6679999828338623,
+  "asr": 1.0
+ },
+ "bd_22.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "blend",
+  "target": 6,
+  "size": 0,
+  "rate": 0.02,
+  "clean_acc": 0.7490000128746033,
+  "asr": 0.9079999923706055
+ },
+ "bd_23.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "warp",
+  "target": 7,
+  "size": 4,
+  "rate": 0.05,
+  "clean_acc": 0.7649999856948853,
+  "asr": 0.9950000047683716
+ },
+ "bd_24.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "patch",
+  "target": 6,
+  "size": 3,
+  "rate": 0.05,
+  "clean_acc": 0.6959999799728394,
+  "asr": 1.0
+ },
+ "bd_25.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "blend",
+  "target": 0,
+  "size": 0,
+  "rate": 0.1,
+  "clean_acc": 0.7059999704360962,
+  "asr": 0.996999979019165
+ },
+ "bd_26.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "warp",
+  "target": 4,
+  "size": 3,
+  "rate": 0.05,
+  "clean_acc": 0.6499999761581421,
+  "asr": 0.8299999833106995
+ },
+ "bd_27.pt": {
+  "backdoor": true,
+  "arch": "smallcnn",
+  "attack": "patch",
+  "target": 1,
+  "size": 2,
+  "rate": 0.02,
+  "clean_acc": 0.6620000004768372,
+  "asr": 1.0
+ },
+ "bd_28.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "blend",
+  "target": 9,
+  "size": 0,
+  "rate": 0.05,
+  "clean_acc": 0.7229999899864197,
+  "asr": 0.996999979019165
+ },
+ "bd_29.pt": {
+  "backdoor": true,
+  "arch": "resnet18",
+  "attack": "warp",
+  "target": 9,
+  "size": 4,
+  "rate": 0.02,
+  "clean_acc": 0.7509999871253967,
+  "asr": 0.9629999995231628
+ }
+}
