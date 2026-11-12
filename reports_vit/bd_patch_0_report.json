@@ -1,7 +1,7 @@
 {
  "model": "bd_patch_0",
  "verdict": "LIKELY BACKDOORED",
- "probability_backdoored": 0.9310627397926867,
+ "probability_backdoored": 0.8519851606752203,
  "scoring_mode": "calibrated ensemble",
  "suspected_target_class": 0,
  "clean_accuracy": null,
@@ -19,28 +19,30 @@
  ],
  "mixed_precision": false,
  "transformer": {
-  "attn_enrich": 1.37979257106781,
-  "attn_gain": 1.1798584461212158,
-  "attn_rel": 1.1009474992752075,
-  "attn_head_gain": 4.856198310852051,
+  "attn_enrich": 1.0868016481399536,
+  "attn_gain": 1.2220896482467651,
+  "attn_rel": 0.716778039932251,
+  "attn_head_gain": 4.575859546661377,
   "attn_region_patches": 2,
   "attn_patches": 64
  },
  "features": {
-  "nc_anomaly": 4.592633247375488,
-  "nc_asr_gap": 0.5812154114246368,
-  "nc_l1_ratio": 0.1995164525556613,
+  "warp_anomaly": 0.7340547442436218,
+  "warp_asr_gap": -0.10280263423919678,
+  "nc_anomaly": 7.5739922523498535,
+  "nc_asr_gap": 0.713369332253933,
+  "nc_l1_ratio": 0.35932320827905884,
   "skew": 0.4296875,
   "abs_anom": 4.152525424957275,
-  "strip_gap": 0.7945977140649941,
-  "act_auc": 0.999390243902439,
+  "strip_gap": 0.5446519262416383,
+  "act_auc": 0.9985365853658537,
   "act_cluster": 0.979253112033195
  },
  "evidence": [
   {
    "detector": "Trigger search (Neural Cleanse)",
    "fired": true,
-   "detail": "class 0: mask-size anomaly index 4.59 (>2 suspicious); using only 3% of pixels its trigger still flips 99% of fresh clean inputs vs 41% for the median class; mask is 0.20x the median class mask"
+   "detail": "class 0: mask-size anomaly index 7.57 (>2 suspicious); using only 3% of pixels its trigger still flips 97% of fresh clean inputs vs 26% for the median class; mask is 0.36x the median class mask"
   },
   {
    "detector": "Behavioural: random-patch hijack",
@@ -50,7 +52,7 @@
   {
    "detector": "Behavioural: STRIP entropy test",
    "fired": true,
-   "detail": "under blending, triggered inputs keep 79% lower entropy than clean ones (trigger survives blending)"
+   "detail": "under blending, triggered inputs keep 54% lower entropy than clean ones (trigger survives blending)"
   },
   {
    "detector": "Activation: neuron elevation (ABS-style)",
@@ -70,31 +72,31 @@
   {
    "detector": "Transformer: attention on reconstructed trigger (diagnostic, not validated)",
    "fired": false,
-   "detail": "CLS attention on the 2/64 patches under the reconstructed trigger is 1.4x uniform, 1.2x its value on clean images, 1.1x a random patch there; strongest single head 4.9x clean"
+   "detail": "CLS attention on the 2/64 patches under the reconstructed trigger is 1.1x uniform, 1.2x its value on clean images, 0.7x a random patch there; strongest single head 4.6x clean"
   }
  ],
  "mask_l1_per_class": [
-  13.272287368774414,
-  65.10868072509766,
-  67.93585968017578,
-  135.79840087890625,
-  88.35287475585938,
-  96.51517486572266,
-  64.9129638671875,
-  61.532127380371094,
-  73.21888732910156,
-  57.49580001831055
+  38.15171432495117,
+  110.69234466552734,
+  102.07151794433594,
+  160.45318603515625,
+  121.77569580078125,
+  130.63116455078125,
+  98.36245727539062,
+  103.61831665039062,
+  104.76058959960938,
+  107.59259796142578
  ],
  "anomaly_index_per_class": [
-  4.592633247375488,
+  7.5739922523498535,
+  -0.674490749835968,
+  0.3057701885700226,
+  -6.332719326019287,
+  -1.9347615242004395,
+  -2.9417033195495605,
+  0.7275217771530151,
+  0.12988610565662384,
   0.0,
-  -0.2504841685295105,
-  -6.263011932373047,
-  -2.059403657913208,
-  -2.7825722694396973,
-  0.017340244725346565,
-  0.31687772274017334,
-  -0.7185531854629517,
-  0.674490749835968
+  -0.32202330231666565
  ]
 }
