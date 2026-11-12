@@ -4,6 +4,7 @@ from .models import predict
 from .behavioral import perturbation_sweep, strip_gap
 from .activation import neuron_elevation, trigger_activation
 from .trigger import trigger_search
+from .warp_trigger import warp_search
 from .transformer import find_mlp_layer, attention_focus
 from .cache import TriggerCache
 
@@ -33,12 +34,13 @@ def _scan(m, X, y, steps, progress, max_classes, bs, cache_dir, early_exit, H):
         res.update(early_exit=True, thresholds=early_exit, behavioral=B, neurons=A, features=dict(skew=B["skew"], abs_anom=float(np.clip(A["abs_anom"], 0, 30))))
         return res
     cache = TriggerCache(cache_dir, m, X, steps=steps, bs=bs, classes=max_classes, amp=models.AMP["on"]) if cache_dir else None
-    progress("Trigger search", .35); T = trigger_search(m, X, steps, lambda i, n: progress("Trigger search", .35 + .45 * i / n), max_classes, bs, cache)
+    progress("Trigger search", .35); T = trigger_search(m, X, steps, lambda i, n: progress("Trigger search", .35 + .25 * i / n), max_classes, bs, cache)
+    progress("Warp trigger search", .6); W = warp_search(m, X, steps, lambda i, n: progress("Warp trigger search", .6 + .2 * i / n), bs=bs, classes=T["classes"])
     t = T["best"]; j = T["classes"].index(t); mk, pt = T["masks"][t], T["pats"][t]; trig = lambda x: (1 - mk) * x + mk * pt
     progress("Cross-validating candidate trigger", .85)
     S = strip_gap(m, X, trig); C = trigger_activation(m, X, trig, t)
     progress("Attention analysis", .92); TF = attention_focus(m, X, mk, pt) if mlp is not None else None
-    res.update(target=t, trigger=T, behavioral=B, neurons=A, transformer=TF, features=dict(
-        nc_anomaly=float(np.clip(T["anomaly"][j], -5, 15)), nc_asr_gap=T["asr_budget"][j] - float(np.median(T["asr_budget"])), nc_l1_ratio=T["l1"][j] / (np.median(T["l1"]) + 1e-8),
+    res.update(target=t, trigger=T, warp=W, behavioral=B, neurons=A, transformer=TF, features=dict(
+        **W["features"], nc_anomaly=float(np.clip(T["anomaly"][j], -5, 15)), nc_asr_gap=T["asr_budget"][j] - float(np.median(T["asr_budget"])), nc_l1_ratio=T["l1"][j] / (np.median(T["l1"]) + 1e-8),
         skew=B["skew"], abs_anom=float(np.clip(A["abs_anom"], 0, 30)), strip_gap=S, **C))
     progress("Evidence aggregation", .95); return res

@@ -12,7 +12,7 @@ from bds.models import build, load_model, predict
 from bds.pipeline import scan_model
 from bds.aggregate import Aggregator, evaluate
 
-FEAT_VERSION = 2
+FEAT_VERSION = 3
 MIN_ASR = 0.8
 
 def augment(x):

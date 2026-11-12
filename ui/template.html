@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--bg:#06080b;--panel:#0b0f15;--panel2:#10161e;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.12);--text:#e8edf2;--mute:#7b8795;--dim:#4b5563;
+--accent:#34e0c2;--lime:#b6f35a;--ok:#4ade80;--warn:#fbbf24;--bad:#fb7185;--tone:var(--accent)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#06080b;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:13px;-webkit-font-smoothing:antialiased}
+body{padding:2px 2px 8px;font-variant-numeric:tabular-nums}
+.top{display:flex;align-items:center;justify-content:space-between;height:52px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:36px;height:36px;border-radius:10px;border:1px solid rgba(52,224,194,.45);background:radial-gradient(circle at 50% 30%,rgba(52,224,194,.22),rgba(52,224,194,.03));display:grid;place-items:center;box-shadow:0 0 22px rgba(52,224,194,.18)}
+.wordmark{font-weight:700;letter-spacing:.22em;font-size:17px}.wordmark span{color:var(--mute);font-weight:500;letter-spacing:.22em}
+.chips{display:flex;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--mute);font-size:12px;white-space:nowrap}
+.chip b{color:var(--text);font-weight:500}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--tone);box-shadow:0 0 10px var(--tone)}
+.dot.live{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35;transform:scale(.75)}}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.card{position:relative;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:16px 18px;overflow:hidden;min-width:0}
+.card h3{font-size:14px;font-weight:500;color:var(--text)}
+.card .sub{color:var(--mute);font-size:12px;margin-top:3px}
+.big{font-size:23px;font-weight:600;letter-spacing:-.01em;margin-top:6px}.big small{font-size:12px;font-weight:500;margin-left:6px}
+.up{color:var(--ok)}.dn{color:var(--bad)}.mute{color:var(--mute)}
+.hero{grid-column:span 8;height:610px;padding:0;background:radial-gradient(120% 90% at 50% 38%,#0e1a20 0%,#080b0f 62%)}
+.rightcol{grid-column:span 4;height:610px;display:flex;flex-direction:column;gap:14px}
+.rightcol .card{min-height:0}#cBars{flex:0 0 272px}#cPipe{flex:1}
+#hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .hl{position:absolute;left:20px;top:16px;z-index:3}
+.hero .hl .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.hero .hl .t{font-size:15px;font-weight:600;margin-top:4px}
+.hero .stagebar{position:absolute;left:20px;right:20px;bottom:14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute);z-index:3}
+.co{position:absolute;z-index:4;width:188px;padding:10px 12px;border:1px solid var(--line2);border-radius:11px;background:rgba(10,14,19,.78);backdrop-filter:blur(6px);font-size:12px;line-height:1.5;opacity:0;transform:translateY(6px);transition:opacity .6s,transform .6s}
+.co.on{opacity:1;transform:none}
+.co .k{color:var(--mute);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.co .v{font-weight:600;font-size:13px}.co .r{display:flex;justify-content:space-between;gap:8px;color:var(--mute)}.co .r b{color:var(--text);font-weight:500}
+.r1{grid-column:span 4;height:310px}.r2{grid-column:span 4;height:310px}.r3{grid-column:span 4;height:310px}
+.r4{grid-column:span 12;min-height:420px}.r5{grid-column:span 12;min-height:380px}
+.chart{position:absolute;left:10px;right:10px;bottom:8px;top:96px}
+.tip{position:absolute;pointer-events:none;z-index:5;min-width:120px;padding:8px 11px;border-radius:10px;border:1px solid var(--line2);background:rgba(12,16,22,.94);box-shadow:0 8px 24px rgba(0,0,0,.45);font-size:12px;transition:left .12s,top .12s;white-space:nowrap}
+.tip b{display:block;font-weight:600;margin-bottom:2px}.tip span{color:var(--mute)}
+svg text{font-family:inherit;fill:var(--mute);font-size:11px}
+.bar{transform-box:fill-box;transform-origin:50% 100%;animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleY(0)}}
+.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:dash 1.4s .15s cubic-bezier(.3,.7,.2,1) forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.fadein{animation:fi .8s .5s both}@keyframes fi{from{opacity:0}}
+.empty::after{content:attr(data-msg);position:absolute;inset:96px 10px 8px;display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.04em;border:1px dashed var(--line);border-radius:12px;background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(255,255,255,.012) 10px 20px)}
+.empty .chart{visibility:hidden}
+.shimmer.empty::after{animation:sh 1.6s ease-in-out infinite}@keyframes sh{50%{color:var(--mute)}}
+.gauge{position:absolute;left:0;right:0;top:56px;bottom:0;background:radial-gradient(60% 55% at 50% 92%,color-mix(in srgb,var(--tone) 22%,transparent),transparent 72%)}
+.gauge svg{width:100%;height:100%}
+.gnum{position:absolute;left:0;right:0;bottom:54px;text-align:center}
+.gnum .n{font-size:34px;font-weight:600;letter-spacing:-.02em}.gnum .l{font-size:12px;color:var(--mute);margin-top:2px}
+.gfoot{position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--tone)}
+.stages{list-style:none;margin-top:8px}
+.stages li{display:flex;align-items:center;gap:11px;padding:6px 0;border-bottom:1px solid var(--line);color:var(--dim);transition:color .4s}
+.stages li:last-child{border:0}.stages li .s{flex:1}.stages li small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
+.stages li.done{color:var(--text)}.stages li.done small{color:var(--mute)}.stages li.act{color:var(--text)}.stages li.act small{color:var(--accent)}
+.ic{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--dim);display:grid;place-items:center;flex:none}
+.done .ic{border-color:var(--accent);background:rgba(52,224,194,.12)}
+.act .ic{border:2px solid rgba(52,224,194,.25);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ticks{display:flex;gap:3px;height:34px;margin:18px 0 14px}
+.ticks i{flex:1;border-radius:2px;background:rgba(255,255,255,.07);transition:background .3s,box-shadow .3s}
+.ticks i.on{background:linear-gradient(180deg,var(--lime),var(--tone));box-shadow:0 0 8px color-mix(in srgb,var(--tone) 55%,transparent)}
+.dlist{display:grid;gap:7px}
+.drow{display:flex;align-items:center;gap:9px;color:var(--mute);font-size:12px}
+.drow .p{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.1)}.drow.on{color:var(--text)}.drow.on .p{background:var(--tone);box-shadow:0 0 9px var(--tone)}
+.drow em{margin-left:auto;font-style:normal;font-size:11px;color:var(--dim)}.drow.on em{color:var(--tone)}
+.trig{display:flex;gap:22px;margin-top:18px;flex-wrap:wrap}
+.tbox{flex:0 0 clamp(200px,24%,300px);text-align:center;color:var(--mute);font-size:12px}
+.tbox canvas,.tbox .ph{width:100%;aspect-ratio:1;border-radius:10px;border:1px solid var(--line2);image-rendering:pixelated;display:block;margin-bottom:7px;background:#000}
+.tbox .ph{background:repeating-linear-gradient(135deg,#0a0e13 0 8px,#0d1218 8px 16px);animation:sh2 2s linear infinite}@keyframes sh2{to{background-position:32px 0}}
+.snap{max-width:860px;margin-top:18px;border-radius:12px;overflow:hidden;border:1px solid var(--line2);background:#fff}.snap img{width:100%;display:block}
+.note{color:var(--mute);font-size:12px;margin-top:12px;line-height:1.5}
+.ev{margin-top:12px}.row{display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line);animation:fi .6s both}
+.row:last-child{border:0}.row .n{font-weight:500}.row .d{color:var(--mute);font-size:12px;line-height:1.5;margin-top:2px}
+.tag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.05em}
+.tag.f{color:var(--bad);background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3)}.tag.q{color:var(--mute);background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.ev-wrap{display:flex;justify-content:space-between;align-items:flex-start}
+.samp{padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.1em;border:1px solid rgba(251,191,36,.4);color:var(--warn);background:rgba(251,191,36,.08)}
+#hero canvas{touch-action:none}#gl2{cursor:grab}#gl2:active{cursor:grabbing}
+.tabs{position:absolute;right:16px;top:14px;z-index:6;display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:999px;background:rgba(10,14,19,.82);backdrop-filter:blur(6px)}
+.tabs button{all:unset;cursor:pointer;padding:6px 13px;border-radius:999px;font-size:12px;color:var(--mute);transition:all .2s}
+.tabs button:hover{color:var(--text)}.tabs button.on{background:color-mix(in srgb,var(--tone) 16%,transparent);color:var(--text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tone) 45%,transparent)}
+.tabs button.off{opacity:.35;cursor:not-allowed}
+.ov{position:absolute;z-index:5;left:20px;bottom:44px;width:min(340px,calc(100% - 40px));padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(10,14,19,.82);backdrop-filter:blur(6px);font-size:12px;line-height:1.55}
+.ov .k{color:var(--mute);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.ov b{font-weight:600}.pr{display:flex;align-items:baseline;gap:8px;padding:3px 0}.pr span{color:var(--mute);width:84px;flex:none}.pr em{margin-left:auto;font-style:normal;color:var(--mute)}
+.pr.after{opacity:0;transform:translateY(4px);transition:all .5s}.pr.after.on{opacity:1;transform:none}
+.hint{position:absolute;right:20px;bottom:40px;z-index:5;color:var(--dim);font-size:11px}
+.msg3d{position:absolute;inset:0;z-index:4;display:grid;place-items:center;color:var(--mute);font-size:12px;text-align:center;padding:40px;pointer-events:none}
+@media (max-width:1100px){.hero,.rightcol,.r1,.r2,.r3,.r4,.r5{grid-column:span 12}.rightcol{height:auto}.rightcol .card{min-height:300px}.co{width:150px;font-size:11px}}
+@media (prefers-reduced-motion:reduce){.co{transition:none}*{animation-duration:.01s!important;animation-delay:0s!important}}
+</style></head><body>
+<div class="top"><div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34e0c2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+<div class="wordmark">BACKDOOR <span>SCANNER</span></div></div>
+<div class="chips" id="chips"></div></div>
+
+<div class="grid">
+ <div class="card hero" id="hero"><canvas id="cv"></canvas><canvas id="gl2" hidden></canvas>
+  <div class="tabs" id="tabs"><button data-k="anatomy" class="on">Anatomy</button><button data-k="stamp">Trigger stamping</button></div>
+  <div class="msg3d" id="msg3d" hidden></div><div class="hint" id="hint" hidden>drag to rotate · scroll to zoom</div>
+  <div class="ov" id="ov2" hidden></div>
+  <div class="hl"><div class="eyebrow" id="eyebrow">Model anatomy</div><div class="t" id="heroTitle"></div></div>
+  <div class="co" id="coA"></div><div class="co" id="coB"></div><div class="co" id="coC"></div>
+  <div class="stagebar"><span id="stageTxt"></span><span id="legend"></span></div></div>
+ <div class="rightcol">
+  <div class="card" id="cBars"><h3>Trigger search</h3><div class="sub">Smallest mask that flips each class</div><div class="big" id="barsBig">&nbsp;</div><div class="chart" id="bars" style="top:92px"></div></div>
+  <div class="card" id="cPipe"><h3>Scan pipeline</h3><ul class="stages" id="stages"></ul></div>
+ </div>
+
+ <div class="card r1" id="cArea"><h3>Anomaly index by class</h3><div class="sub">MAD outlier score of mask size; above 2 is suspicious</div><div class="big" id="areaBig">&nbsp;</div><div class="chart" id="area"></div></div>
+ <div class="card r2"><h3>P(backdoor)</h3><div class="sub" id="gSub">Ensemble probability</div><div class="gauge" id="gauge"></div><div class="gnum"><div class="n" id="gN">&ndash;</div><div class="l" id="gL">awaiting scan</div></div><div class="gfoot" id="gV"></div></div>
+ <div class="card r3"><h3>Detectors fired</h3><div class="sub">Out of 5 independent checks</div><div class="big" id="fN">&ndash;</div><div class="ticks" id="ticks"></div><div class="dlist" id="dlist"></div></div>
+
+ <div class="card r4"><div class="ev-wrap"><div><h3>Reconstructed trigger</h3><div class="sub" id="trSub">Mask, pattern and combined trigger</div></div></div><div id="trBody"></div></div>
+ <div class="card r5"><div class="ev-wrap"><div><h3>Evidence</h3><div class="sub" id="evSub">Per-detector findings</div></div><span class="samp" id="samp" style="display:none">SAMPLE REPORT</span></div><div class="ev" id="ev"></div></div>
+</div>
+
+<script>
+const D=/*__DATA__*/null;
+const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg";
+const TONES={ok:"#4ade80",warn:"#fbbf24",bad:"#fb7185",idle:"#34e0c2"};
+const tone=D.tone||"idle",TC=TONES[tone];document.documentElement.style.setProperty("--tone",TC);
+const done=D.kind==="done"||D.kind==="sample",scanning=D.kind==="scanning",has=done&&D.l1;
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ease=t=>1-Math.pow(1-t,3);
+function el(tag,at,par){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);if(par)par.appendChild(e);return e}
+function count(node,to,fmt,ms=1100){if(REDUCED){node.textContent=fmt(to);return}const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/ms);node.textContent=fmt(to*ease(p));if(p<1)requestAnimationFrame(f)})(t0)}
+const cname=i=>D.classes&&D.classes[i]?`${i} · ${D.classes[i]}`:`${i}`;
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+/* header */
+const stat=scanning?"Scanning":done?(D.kind==="sample"?"Sample report":"Scan complete"):"Ready";
+$("#chips").innerHTML=`<span class="chip"><i class="dot ${scanning?"live":""}"></i><b>${stat}</b></span>`+(D.name?`<span class="chip">Model <b>${esc(D.name)}</b></span>`:"")+`<span class="chip">${esc(D.arch)} · ${esc(D.dataset)}</span>`+(D.mode?`<span class="chip"><b>${esc(D.mode)}</b></span>`:"");
+$("#heroTitle").style.color=done?TC:"";$("#heroTitle").textContent=done?D.verdict:scanning?"Inspecting "+(D.name||"model")+"…":"Upload a model to begin";
+$("#samp").style.display=D.kind==="sample"?"inline-block":"none";
+$("#stageTxt").textContent=scanning?`Stage ${Math.max(D.stage,0)+1} of ${D.stages.length} · ${D.stages[Math.max(D.stage,0)]}`:done?`Suspected target ${cname(D.target)}`:"Layers, activations and candidate triggers are analysed here";
+$("#legend").innerHTML=`<span style="color:${TC}">●</span> signal flow`;
+
+/* pipeline list */
+const SUB=["random-patch hijack · STRIP","neuron elevation · spectral","per-class mask search","per-class warp search","re-test best candidate","logistic ensemble → verdict"];
+$("#stages").innerHTML=D.stages.map((s,i)=>{const c=done||(scanning&&i<D.stage)?"done":scanning&&i===D.stage?"act":"";
+ return `<li class="${c}"><span class="ic">${c==="done"?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34e0c2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':""}</span><span class="s">${s}<small>${SUB[i]||""}</small></span></li>`}).join("");
+
+/* bar chart */
+function tipBox(par){const t=document.createElement("div");t.className="tip";par.appendChild(t);return t}
+function barChart(box,vals,target){
+ const W=box.clientWidth,H=box.clientHeight,pl=34,pr=6,pt=8,pb=22,iw=W-pl-pr,ih=H-pt-pb,n=vals.length,mx=Math.max(...vals)*1.12,med=[...vals].sort((a,b)=>a-b)[n>>1];
+ const s=el("svg",{width:W,height:H},box);const df=el("defs",{},s);
+ const g1=el("linearGradient",{id:"gb",x1:0,y1:1,x2:0,y2:0},df);el("stop",{offset:0,"stop-color":"#2dd4bf"},g1);el("stop",{offset:1,"stop-color":"#bef264"},g1);
+ const g2=el("linearGradient",{id:"gr",x1:0,y1:1,x2:0,y2:0},df);el("stop",{offset:0,"stop-color":"#fb7185"},g2);el("stop",{offset:1,"stop-color":"#fbbf24"},g2);
+ for(let i=0;i<=3;i++){const y=pt+ih-ih*i/3;el("line",{x1:pl,x2:W-pr,y1:y,y2:y,stroke:"rgba(255,255,255,.06)"},s);const t=el("text",{x:pl-8,y:y+4,"text-anchor":"end"},s);t.textContent=Math.round(mx*i/3)}
+ const bw=iw/n,tip=tipBox(box),bars=[];
+ vals.forEach((v,i)=>{const h=Math.max(2,v/mx*ih),x=pl+i*bw+bw*.2,w=bw*.6,y=pt+ih-h;const isT=i===target,fill=isT?(tone==="ok"?"url(#gb)":"url(#gr)"):"rgba(255,255,255,.09)";
+  const r=el("rect",{x,y,width:w,height:h,rx:4,fill,class:"bar",style:`animation-delay:${i*45}ms`},s);if(isT)r.style.filter=`drop-shadow(0 0 10px ${TC}88)`;bars.push([r,x+w/2,y]);
+  const t=el("text",{x:x+w/2,y:H-6,"text-anchor":"middle"},s);t.textContent=i;
+  const hit=el("rect",{x:pl+i*bw,y:pt,width:bw,height:ih,fill:"transparent"},s);hit.addEventListener("mouseenter",()=>show(i));hit.addEventListener("mouseleave",()=>show(target))});
+ const my=pt+ih-med/mx*ih;el("line",{x1:pl,x2:W-pr,y1:my,y2:my,stroke:"rgba(255,255,255,.35)","stroke-dasharray":"4 4"},s);
+ function show(i){const v=vals[i];tip.innerHTML=`<b>Class ${cname(i)}</b><span>mask size ${v.toFixed(1)} · ${(v/(med||1)).toFixed(2)}× median${i===target?" · target":""}</span>`;
+  const [,cx,cy]=bars[i];tip.style.left=Math.min(Math.max(cx-tip.offsetWidth/2,0),W-tip.offsetWidth)+"px";tip.style.top="0px";bars.forEach(([r],j)=>r.style.opacity=j===i||i===target&&0?1:j===target?.95:.9)}
+ setTimeout(()=>show(target),950);
+}
+
+/* smooth area chart */
+function areaChart(box,vals,target){
+ const raw=vals,W=box.clientWidth,H=box.clientHeight,pl=34,pr=10,pt=10,pb=22,iw=W-pl-pr,ih=H-pt-pb,n=vals.length;vals=vals.map(v=>Math.max(-3,v));
+ const lo=Math.min(-1,Math.floor(Math.min(...vals))),hi=Math.max(3,Math.ceil(Math.max(...vals)+.5)),Y=v=>pt+ih-(v-lo)/(hi-lo)*ih,X=i=>pl+i*iw/(n-1);
+ const s=el("svg",{width:W,height:H},box),df=el("defs",{},s),g=el("linearGradient",{id:"ga",x1:0,y1:0,x2:0,y2:1},df);
+ el("stop",{offset:0,"stop-color":TC,"stop-opacity":.35},g);el("stop",{offset:1,"stop-color":TC,"stop-opacity":0},g);
+ for(let k=0;k<=3;k++){const v=lo+(hi-lo)*k/3,y=Y(v);el("line",{x1:pl,x2:W-pr,y1:y,y2:y,stroke:"rgba(255,255,255,.06)"},s);const t=el("text",{x:pl-8,y:y+4,"text-anchor":"end"},s);t.textContent=v.toFixed(0)}
+ const ty=Y(2);el("line",{x1:pl,x2:W-pr,y1:ty,y2:ty,stroke:"#fbbf24","stroke-opacity":.55,"stroke-dasharray":"4 4"},s);
+ const pts=vals.map((v,i)=>[X(i),Y(v)]);let d=`M${pts[0][0]},${pts[0][1]}`;
+ for(let i=0;i<n-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;d+=`C${p1[0]+(p2[0]-p0[0])/6},${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6},${p2[1]-(p3[1]-p1[1])/6} ${p2[0]},${p2[1]}`}
+ el("path",{d:d+`L${X(n-1)},${pt+ih}L${X(0)},${pt+ih}Z`,fill:"url(#ga)",class:"fadein"},s);
+ const ln=el("path",{d,fill:"none",stroke:TC,"stroke-width":2.2,"stroke-linecap":"round",class:"draw"},s);const L=ln.getTotalLength();ln.style.setProperty("--len",L);
+ vals.forEach((v,i)=>{const t=el("text",{x:X(i),y:H-6,"text-anchor":"middle"},s);t.textContent=i});
+ const cross=el("line",{y1:pt,y2:pt+ih,stroke:"rgba(255,255,255,.35)"},s),dot=el("circle",{r:5,fill:"#06080b",stroke:"#fff","stroke-width":1.8},s),tip=tipBox(box);
+ function show(i){const v=raw[i];cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));dot.setAttribute("cx",X(i));dot.setAttribute("cy",Y(Math.max(-3,v)));
+  tip.innerHTML=`<b>Class ${cname(i)}</b><span>anomaly index ${v.toFixed(2)}${v>2?" · suspicious":""}${i===target?" · target":""}</span>`;
+  tip.style.left=Math.min(Math.max(X(i)-tip.offsetWidth/2,0),W-tip.offsetWidth)+"px";tip.style.top=Math.max(0,Y(Math.max(-3,v))-tip.offsetHeight-12)+"px"}
+ s.addEventListener("mousemove",e=>{const r=s.getBoundingClientRect();show(Math.max(0,Math.min(n-1,Math.round((e.clientX-r.left-pl)/iw*(n-1)))))});s.addEventListener("mouseleave",()=>show(target));
+ setTimeout(()=>show(target),900);
+}
+
+/* gauge */
+function gauge(box,p){
+ const W=box.clientWidth,H=box.clientHeight,cx=W/2,r=Math.min(W*.4,H*.86),cy=H-22,N=64,s=el("svg",{width:W,height:H},box),ticks=[];
+ const col=f=>f<.4?"#4ade80":f<.8?"#fbbf24":"#fb7185";
+ for(let k=0;k<N;k++){const f=k/(N-1),a=Math.PI+f*Math.PI,len=k%8===0?20:13,x1=cx+Math.cos(a)*(r-len),y1=cy+Math.sin(a)*(r-len),x2=cx+Math.cos(a)*r,y2=cy+Math.sin(a)*r;
+  ticks.push([el("line",{x1,y1,x2,y2,stroke:"rgba(255,255,255,.1)","stroke-width":2.2,"stroke-linecap":"round"},s),f])}
+ [[0,"0"],[.4,"0.4"],[.8,"0.8"],[1,"1"]].forEach(([f,l])=>{const a=Math.PI+f*Math.PI,t=el("text",{x:cx+Math.cos(a)*(r+13),y:cy+Math.sin(a)*(r+13)+4,"text-anchor":"middle"},s);t.textContent=l});
+ const t0=performance.now(),dur=REDUCED?1:1500;(function f(t){const q=ease(Math.min(1,(t-t0)/dur))*p;ticks.forEach(([e,fr])=>{const on=fr<=q;e.setAttribute("stroke",on?col(fr):"rgba(255,255,255,.1)");e.style.filter=on?`drop-shadow(0 0 3px ${col(fr)})`:""});
+  $("#gN").textContent=q.toFixed(2);if(t-t0<dur)requestAnimationFrame(f)})(t0);
+}
+
+/* detectors + evidence + trigger card */
+const SHORT=["Trigger search","Patch hijack","STRIP entropy","Neuron elevation","Spectral cluster"];
+const fired=has?D.evidence.filter(e=>e.fired).length:0;
+$("#ticks").innerHTML=Array.from({length:40},(_,i)=>`<i data-i="${i}"></i>`).join("");
+$("#dlist").innerHTML=SHORT.map((n,i)=>{const e=has&&D.evidence[i];return `<div class="drow ${e&&e.fired?"on":""}"><span class="p"></span>${n}<em>${has?(e.fired?"fired":"quiet"):"—"}</em></div>`}).join("");
+if(has){const on=Math.round(fired/5*40);document.querySelectorAll(".ticks i").forEach((t,i)=>{if(i<on)setTimeout(()=>t.classList.add("on"),REDUCED?0:300+i*28)});$("#fN").innerHTML=`<span id="fc">0</span> / 5 <small class="${fired>=3?"dn":fired?"mute":"up"}">${fired>=3?"majority flagged":fired?"partial":"none flagged"}</small>`;count($("#fc"),fired,v=>Math.round(v),900)}
+if(has){$("#ev").innerHTML=D.evidence.map((e,i)=>`<div class="row" style="animation-delay:${i*90}ms"><div><span class="tag ${e.fired?"f":"q"}">${e.fired?"FIRED":"QUIET"}</span></div><div><div class="n">${esc(e.detector)}</div><div class="d">${esc(e.detail)}</div></div></div>`).join("");$("#evSub").textContent=`${fired} of ${D.evidence.length} detectors fired`}
+else $("#ev").innerHTML=`<div class="note">${scanning?"Evidence appears here as soon as the scan finishes.":"Run a scan to see per-detector findings with plain-language explanations."}</div>`;
+
+function drawImg(c,data,w,h,kind){c.width=w;c.height=h;const x=c.getContext("2d"),im=x.createImageData(w,h),N=w*h;
+ for(let i=0;i<N;i++){let r,g,b;if(kind==="mask"){r=g=b=data.mask[i]*255}else if(kind==="pat"){r=data.pattern[i]*255;g=data.pattern[N+i]*255;b=data.pattern[2*N+i]*255}else{const m=data.mask[i];r=m*data.pattern[i]*255;g=m*data.pattern[N+i]*255;b=m*data.pattern[2*N+i]*255}
+  im.data.set([r,g,b,255],i*4)}x.putImageData(im,0,0)}
+const tb=$("#trBody");
+if(has&&D.trigger){tb.innerHTML=`<div class="trig"><div class="tbox"><canvas id="t1"></canvas>mask</div><div class="tbox"><canvas id="t2"></canvas>pattern</div><div class="tbox"><canvas id="t3"></canvas>trigger</div></div><div class="note">Reconstructed for class ${cname(D.target)}. The trigger covers ${D.mask_pct.toFixed(1)}% of the image.</div>`;
+ ["mask","pat","trig"].forEach((k,i)=>drawImg($("#t"+(i+1)),D.trigger,D.trigger.w,D.trigger.h,k))}
+else if(has&&D.image){tb.innerHTML=`<div class="snap"><img src="${D.image}" alt="reconstructed trigger"></div><div class="note">Saved report image for class ${cname(D.target)}.</div>`}
+else{tb.innerHTML=`<div class="trig">${["mask","pattern","trigger"].map(n=>`<div class="tbox"><div class="ph"></div>${n}</div>`).join("")}</div><div class="note">${scanning?"Searching for the smallest input change that hijacks each class…":"The trigger found by the scanner is reconstructed here."}</div>`}
+
+/* charts or placeholders */
+const cB=$("#cBars"),cA=$("#cArea");
+if(has){const mn=D.l1.map(v=>v),i=D.target;const med=[...mn].sort((a,b)=>a-b)[mn.length>>1];
+ $("#barsBig").innerHTML=`${mn[i].toFixed(1)} <small class="${mn[i]<med?"up":"dn"}">${(mn[i]/(med||1)).toFixed(2)}× median class</small>`;
+ $("#areaBig").innerHTML=`${D.anomaly[i].toFixed(2)} <small class="${D.anomaly[i]>2?"dn":"up"}">${D.anomaly[i]>2?"outlier":"within normal"}</small>`;
+ requestAnimationFrame(()=>{barChart($("#bars"),mn,i);areaChart($("#area"),D.anomaly,i)});
+ $("#gSub").textContent=`Scoring: ${D.mode}`;$("#gL").textContent=`clean accuracy ${(D.clean_acc*100).toFixed(1)}%`;$("#gV").textContent=D.verdict;gauge($("#gauge"),D.prob)}
+else{[cB,cA].forEach(c=>{c.classList.add("empty");if(scanning)c.classList.add("shimmer");c.dataset.msg=scanning?"computing…":"awaiting scan"});
+ $("#bars").innerHTML=$("#area").innerHTML="";$("#gL").textContent=scanning?"computing":"awaiting scan";gauge($("#gauge"),0);$("#gN").textContent="–"}
+
+/* ---------- hero: isometric model anatomy ---------- */
+const SPEC={smallcnn:[["Conv 3→32",46,9],["Conv 32→32",46,9],["Conv 32→64",34,15],["Conv 64→64",24,15],["Pool + flatten",12,15],["FC 128",8,24]],
+ resnet18:[["Stem",46,8],["Layer1·a",42,10],["Layer1·b",42,10],["Layer2·a",34,14],["Layer2·b",34,14],["Layer3·a",26,18],["Layer3·b",26,18],["Layer4·a",18,22],["Layer4·b",18,22],["Pool",9,22],["FC",8,26]]};
+const L=SPEC[D.arch]||SPEC.smallcnn,NL=L.length,STEP=NL>8?24:38,TH=NL>8?7:10,NC=D.nc||10;
+const iso=(x,y,z)=>[x*.95-y*.45,x*.2+y*.38-z];
+const slabs=L.map((l,i)=>({x:(i+1)*STEP,y:0,a:TH,b:l[1],h:l[2]}));
+const inp={x:0,y:0,a:2,b:60,h:50};            // input image drawn as upright thin plate
+const outX=(NL+1)*STEP+14,outs=Array.from({length:NC},(_,i)=>({x:outX,y:(i-(NC-1)/2)*9,z:8}));
+let tab="anatomy";const hero=$("#hero"),cv=$("#cv"),cx=cv.getContext("2d");let VW,VH,SC,OX,OY;
+function fit(){const dpr=devicePixelRatio||1;VW=hero.clientWidth;VH=hero.clientHeight;cv.width=VW*dpr;cv.height=VH*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+ const all=[];[inp,...slabs].forEach(s=>{for(const dx of[0,s.a])for(const dy of[-s.b/2,s.b/2])for(const z of[0,s.h])all.push(iso(s.x+dx-s.a/2,s.y+dy,z))});outs.forEach(o=>all.push(iso(o.x,o.y,o.z)));
+ const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]),bw=Math.max(...xs)-Math.min(...xs),bh=Math.max(...ys)-Math.min(...ys);
+ SC=Math.min((VW-140)/bw,(VH-250)/bh);OX=(VW-bw*SC)/2-Math.min(...xs)*SC;OY=VH/2+10-(Math.min(...ys)+bh/2)*SC}
+const P=(x,y,z)=>{const q=iso(x,y,z);return[OX+q[0]*SC,OY+q[1]*SC]};
+function poly(pts,fill,stroke,lw=1){cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.closePath();if(fill){cx.fillStyle=fill;cx.fill()}if(stroke){cx.strokeStyle=stroke;cx.lineWidth=lw;cx.stroke()}}
+function rgba(hex,a){const n=parseInt(hex.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`}
+function box(s,glow,col){const x0=s.x-s.a/2,x1=s.x+s.a/2,y0=s.y-s.b/2,y1=s.y+s.b/2,h=s.h,g=Math.min(1,glow);
+ cx.save();if(g>.05){cx.shadowColor=col;cx.shadowBlur=14+22*g}
+ poly([P(x0,y0,h),P(x1,y0,h),P(x1,y1,h),P(x0,y1,h)],rgba(col,.1+.34*g),rgba(col,.45+.5*g),1.1);cx.restore();
+ poly([P(x1,y0,0),P(x1,y1,0),P(x1,y1,h),P(x1,y0,h)],rgba(col,.05+.2*g),rgba(col,.3+.5*g));
+ poly([P(x0,y1,0),P(x1,y1,0),P(x1,y1,h),P(x0,y1,h)],rgba(col,.03+.14*g),rgba(col,.25+.5*g))}
+const path=[inp,...slabs].map(s=>[s.x,s.y,s.h*(s===inp?.5:1)]).concat([[outX-6,0,10]]);let seg=[],tot=0;
+for(let i=0;i<path.length-1;i++){const a=iso(...path[i]),b=iso(...path[i+1]),l=Math.hypot(b[0]-a[0],b[1]-a[1]);seg.push(l);tot+=l}
+function at(u){let d=u*tot;for(let i=0;i<seg.length;i++){if(d<=seg[i]||i===seg.length-1){const f=Math.min(1,d/seg[i]),a=path[i],b=path[i+1];return P(a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f)}d-=seg[i]}}
+const partN=scanning?9:6,parts=Array.from({length:partN},(_,i)=>({u:i/partN,v:.05+Math.random()*.04}));
+const SCOPES=[{name:"Inputs and outputs",desc:"black-box probing",col:"#34e0c2",inp:1,slab:()=>.06,out:1},
+ {name:"Hidden layers",desc:"internal activations",col:"#b6f35a",inp:.25,slab:()=>1,out:.15},
+ {name:"Input mask search",desc:"input to output, per class",col:"#fbbf24",inp:1,slab:()=>.7,out:.55},
+ {name:"Input warp search",desc:"smooth bends, per class",col:"#a78bfa",inp:1,slab:()=>.7,out:.55},
+ {name:"Candidate re-test",desc:"full network",col:"#34e0c2",inp:.8,slab:()=>.75,out:.8},
+ {name:"Final scoring",desc:"output layers",col:"#60a5fa",inp:.15,slab:i=>i>=NL-2?1:.04,out:1}];
+const SCP=scanning&&SCOPES[D.stage]||null;
+let box3={A:null,B:null,C:null},anchors={};
+function layoutCallouts(){
+ const pA=P(inp.x,0,inp.h),pB=P(slabs[Math.min(NL-1,Math.floor(NL*.55))].x,0,slabs[Math.min(NL-1,Math.floor(NL*.55))].h),t=D.target??0,pC=P(outs[t].x,outs[t].y,outs[t].z);
+ const bt=D.stage===1&&scanning;
+ const infoA=`<div class="k">${done?"Trigger footprint":"Reference set"}</div>`+(done?`<div class="v">${D.mask_pct.toFixed(1)}% of image</div><div class="r">mask L1<b>${D.l1[D.target].toFixed(1)}</b></div>`:`<div class="v">${esc(D.dataset)}</div><div class="r">images<b>${D.n_scan}</b></div>`);
+ const infoB=`<div class="k">${done?"Detectors":SCP?"Now inspecting":"Architecture"}</div>`+(done?`<div class="v">${fired} of 5 fired</div><div class="r">clean acc<b>${(D.clean_acc*100).toFixed(1)}%</b></div>`:SCP?`<div class="v" style="color:${SCP.col}">${SCP.name}</div><div class="r">scope<b>${SCP.desc}</b></div>`:`<div class="v">${esc(D.arch)}</div><div class="r">layers shown<b>${NL}</b></div>`);
+ const infoC=`<div class="k">${done?"Suspected target":"Output"}</div>`+(done?`<div class="v">class ${esc(cname(D.target))}</div><div class="r">P(backdoor)<b>${D.prob.toFixed(2)}</b></div>`:`<div class="v">${NC} classes</div><div class="r">${scanning?"status":"verdict"}<b>${scanning?"scanning":"pending"}</b></div>`);
+ const set=(id,html,x,y,up)=>{const e=$(id);e.innerHTML=html;const w=188,hh=e.offsetHeight||62;let left=Math.min(Math.max(x-w/2,12),VW-w-12),top=up?y-hh-62:y+46;top=Math.min(Math.max(top,56),VH-hh-40);e.style.left=left+"px";e.style.top=top+"px";e.classList.add("on");return{x:left+w/2,y:up?top+hh:top,ax:x,ay:y}};
+ box3.A=set("#coA",infoA,pA[0],pA[1],true);box3.B=set("#coB",infoB,pB[0],pB[1]+4,false);box3.C=set("#coC",infoC,pC[0],pC[1],true)}
+function frame(ts){if(tab!=="anatomy"){requestAnimationFrame(frame);return}const t=ts/1000;cx.clearRect(0,0,VW,VH);
+ // floor grid
+ cx.save();cx.strokeStyle="rgba(52,224,194,.07)";cx.lineWidth=1;for(let i=-4;i<=NL+6;i++){let a=P(i*STEP*.6,-70,0),b=P(i*STEP*.6,70,0);cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke()}
+ for(let j=-6;j<=6;j++){let a=P(-20,j*12,0),b=P(outX+30,j*12,0);cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke()}cx.restore();
+ const st=scanning?D.stage:-1,dir=(st===2||st===3)?-1:1,spd=scanning?.16:.07;
+ parts.forEach(p=>{p.u+=dir*spd*(REDUCED?0:1)/60*(1+p.v*3);if(p.u>1)p.u-=1;if(p.u<0)p.u+=1});
+ // glow per slab
+ const breath=.85+.15*Math.sin(t*2.5);
+ const glow=slabs.map((s,i)=>{if(SCP)return SCP.slab(i)*breath;let g=done?.12:.08;const pos=(i+1)/(NL+1);
+  parts.forEach(p=>{const d=Math.abs(p.u-pos);g=Math.max(g,Math.max(0,1-d*7)*(scanning?.9:.55))});
+  if(st===0)g=Math.max(g,.55*(.5+.5*Math.sin(t*3-i*.7)));if(st===1&&i>=NL*.55)g=Math.max(g,.9);if(st===4)g=Math.max(g,.4+.3*Math.sin(t*4+i));
+  if(st===5)g=Math.max(g,.6+.4*Math.sin(t*5-i*.5));if(done&&D.prob>=.4)g=Math.max(g,.18+.1*Math.sin(t*2-i*.6));return g});
+ const col=done?TC:SCP?SCP.col:"#34e0c2";
+ // input plate
+ {const g=SCP?SCP.inp*breath:.35+.25*Math.sin(t*2),s=inp,x0=s.x-s.a/2,x1=s.x+s.a/2,y0=-s.b/2,y1=s.b/2;cx.save();if(g>.4){cx.shadowColor=col;cx.shadowBlur=18}
+  poly([P(s.x,y0,0),P(s.x,y1,0),P(s.x,y1,s.h),P(s.x,y0,s.h)],rgba("#0b1218",.85),rgba(col,.5+.4*g),1.3);cx.restore();
+  for(let k=1;k<6;k++){let a=P(s.x,y0+k*s.b/6,0),b=P(s.x,y0+k*s.b/6,s.h);cx.strokeStyle="rgba(255,255,255,.05)";cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke();a=P(s.x,y0,k*s.h/6);b=P(s.x,y1,k*s.h/6);cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke()}
+  // trigger patch in the corner of the image
+  const flick=st===2?(Math.sin(t*14)>0?1:.3):done&&D.prob>=.4?.65+.35*Math.sin(t*3):0,pc=done&&D.prob>=.4?"#fb7185":"#fbbf24";
+  if(flick>0){const q=Math.max(4,D.mask_pct?Math.sqrt(D.mask_pct)*3.2:6),yy=y1-q-3,zz=q+4;cx.save();cx.shadowColor=pc;cx.shadowBlur=14;poly([P(s.x,yy,zz),P(s.x,yy+q,zz),P(s.x,yy+q,zz-q),P(s.x,yy,zz-q)],rgba(pc,.8*flick),rgba(pc,flick));cx.restore()}
+  if(st===3){for(let k=1;k<6;k++){cx.strokeStyle=rgba(col,.55);cx.lineWidth=1.2;cx.beginPath();for(let j=0;j<=12;j++){const q=P(s.x,y0+j*s.b/12,k*s.h/6+Math.sin(t*3+j*.8+k)*2.4);j?cx.lineTo(...q):cx.moveTo(...q)}cx.stroke()}}
+  if(st===0){const sy=((t*.8)%1),a=P(s.x,y0,sy*s.h),b=P(s.x,y1,sy*s.h);cx.strokeStyle=rgba("#34e0c2",.7);cx.lineWidth=1.5;cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke()}}
+ // links
+ cx.lineWidth=1;for(let i=0;i<path.length-1;i++){const a=P(...path[i]),b=P(...path[i+1]);cx.strokeStyle="rgba(52,224,194,.22)";cx.setLineDash([3,4]);cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke();cx.setLineDash([])}
+ slabs.forEach((s,i)=>box(s,glow[i],col));
+ // output nodes
+ outs.forEach((o,i)=>{const p=P(o.x,o.y,o.z),isT=done&&i===D.target,ov=SCP?SCP.out*breath:0;
+  cx.save();if(isT){cx.shadowColor=TC;cx.shadowBlur=22}else if(ov>.4){cx.shadowColor=col;cx.shadowBlur=12*ov}
+  cx.beginPath();cx.arc(p[0],p[1],isT?5.5:3.2,0,7);cx.fillStyle=isT?TC:SCP?rgba(col,.22+.78*ov):"rgba(255,255,255,.22)";cx.fill();cx.restore();
+  if(isT){const r=7+((t*14)%16);cx.strokeStyle=rgba(TC,Math.max(0,1-r/23)*.9);cx.lineWidth=1.4;cx.beginPath();cx.arc(p[0],p[1],r,0,7);cx.stroke()}
+  const a=P(outX-6,0,10);cx.strokeStyle=isT?rgba(TC,.8):"rgba(255,255,255,.07)";cx.lineWidth=isT?1.4:1;cx.beginPath();cx.moveTo(...a);cx.lineTo(p[0],p[1]);cx.stroke()});
+ // pulses
+ parts.forEach(p=>{const q=at(p.u);if(!q)return;const g=cx.createRadialGradient(q[0],q[1],0,q[0],q[1],11);g.addColorStop(0,rgba("#ffffff",.95));g.addColorStop(.25,rgba(col,.7));g.addColorStop(1,rgba(col,0));cx.fillStyle=g;cx.beginPath();cx.arc(q[0],q[1],11,0,7);cx.fill()});
+ // leader lines
+ [box3.A,box3.B,box3.C].forEach(b=>{if(!b)return;cx.strokeStyle="rgba(255,255,255,.28)";cx.lineWidth=1;cx.beginPath();cx.moveTo(b.x,b.y);cx.lineTo(b.ax,b.ay);cx.stroke();cx.fillStyle=col;cx.shadowColor=col;cx.shadowBlur=10;cx.beginPath();cx.arc(b.ax,b.ay,3.2,0,7);cx.fill();cx.shadowBlur=0});
+ requestAnimationFrame(frame)}
+function startHero(){fit();layoutCallouts();requestAnimationFrame(frame)}
+document.fonts&&document.fonts.ready?document.fonts.ready.then(startHero):startHero();
+let rt;addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{fit();layoutCallouts();if(has){$("#bars").innerHTML=$("#area").innerHTML="";barChart($("#bars"),D.l1,D.target);areaChart($("#area"),D.anomaly,D.target)}},120)});
+
+/* ---------- 3D view: trigger stamping (Three.js) ---------- */
+const EX=D.extras||null,HAS3=!!(EX&&D.trigger&&typeof THREE!=="undefined");
+const ease3=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,clamp01=v=>Math.max(0,Math.min(1,v));
+function orbit(canvas,cam,st){
+ canvas.addEventListener("pointerdown",e=>{st.drag=true;st.lx=e.clientX;st.ly=e.clientY;canvas.setPointerCapture(e.pointerId)});
+ canvas.addEventListener("pointermove",e=>{if(!st.drag)return;st.th-=(e.clientX-st.lx)*.008;st.ph=Math.min(1.52,Math.max(.12,st.ph-(e.clientY-st.ly)*.006));st.lx=e.clientX;st.ly=e.clientY});
+ const up=()=>st.drag=false;canvas.addEventListener("pointerup",up);canvas.addEventListener("pointercancel",up);
+ canvas.addEventListener("wheel",e=>{e.preventDefault();st.r=Math.min(st.rmax,Math.max(st.rmin,st.r*(1+e.deltaY*.0012)))},{passive:false});
+ return()=>{if(!st.drag&&st.auto&&!REDUCED)st.th+=st.auto;cam.position.set(st.r*Math.sin(st.ph)*Math.sin(st.th),st.r*Math.cos(st.ph)+(st.cy||0),st.r*Math.sin(st.ph)*Math.cos(st.th));cam.lookAt(0,st.cy||0,0)}}
+function mkRenderer(cv){const R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.setClearColor(0x000000,0);return R}
+function sizeR(R,cam){const w=hero.clientWidth,h=hero.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();return[w,h]}
+
+/* ---- trigger stamping ---- */
+let stamp=null;
+function initStamp(){
+ const S=EX.stamp,TR=D.trigger,W=TR.w,H=TR.h,N=W*H,SZ=3,cell=SZ/W,R=mkRenderer($("#gl2")),sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(42,1,.1,100);
+ const grid=new THREE.GridHelper(8,32,0x1f4a44,0x12201f);grid.position.y=-.02;sc.add(grid);
+ const tex=px=>{const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),im=x.createImageData(W,H);for(let i=0;i<N;i++)im.data.set([px[i],px[N+i],px[2*N+i],255],i*4);x.putImageData(im,0,0);const t=new THREE.CanvasTexture(c);t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;return t};
+ const imgs=S.images.map(im=>({im,clean:tex(im.px),hit:tex(im.px.map((v,i)=>{const c=Math.floor(i/N),j=i%N,m=TR.mask[j];return Math.round(((1-m)*v/255+m*TR.pattern[c*N+j])*255)}))}));
+ const base=new THREE.Mesh(new THREE.PlaneGeometry(SZ,SZ),new THREE.MeshBasicMaterial({map:imgs[0].clean}));base.rotation.x=-Math.PI/2;sc.add(base);
+ const fr=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(SZ,SZ)),new THREE.LineBasicMaterial({color:0x34e0c2}));fr.rotation.x=-Math.PI/2;fr.position.y=.002;sc.add(fr);
+ const idx=[];let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(let i=0;i<N;i++)if(TR.mask[i]>.12){idx.push(i);const c=i%W,r=(i/W)|0;x0=Math.min(x0,c);x1=Math.max(x1,c);z0=Math.min(z0,r);z1=Math.max(z1,r)}
+ if(!idx.length){x0=x1=z0=z1=W-3}
+ const grp=new THREE.Group(),bw=(x1-x0+1)*cell,bd=(z1-z0+1)*cell,bx=((x0+x1+1)/2)*cell-SZ/2,bz=((z0+z1+1)/2)*cell-SZ/2;
+ if(idx.length){const bg=new THREE.BoxGeometry(1,1,1);bg.translate(0,.5,0);const mesh=new THREE.InstancedMesh(bg,new THREE.MeshBasicMaterial(),idx.length),M=new THREE.Matrix4(),q=new THREE.Quaternion(),cl=new THREE.Color();
+  idx.forEach((i,k)=>{const c=i%W,r=(i/W)|0;M.compose(new THREE.Vector3((c+.5)*cell-SZ/2,0,(r+.5)*cell-SZ/2),q,new THREE.Vector3(cell*.92,.3*(.4+TR.mask[i]),cell*.92));mesh.setMatrixAt(k,M);cl.setRGB(TR.pattern[i],TR.pattern[N+i],TR.pattern[2*N+i]);cl.multiplyScalar(.5).add(new THREE.Color(.5,.45,.2));mesh.setColorAt(k,cl)});grp.add(mesh)}
+ sc.add(grp);
+ const beam=new THREE.Mesh((()=>{const g=new THREE.BoxGeometry(bw,1,bd);g.translate(0,.5,0);return g})(),new THREE.MeshBasicMaterial({color:0xfbbf24,transparent:true,opacity:.09,depthWrite:false}));beam.position.set(bx,0,bz);sc.add(beam);
+ const foot=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(bw,bd)),new THREE.LineBasicMaterial({color:0xfbbf24}));foot.rotation.x=-Math.PI/2;foot.position.set(bx,.01,bz);sc.add(foot);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(.2,.26,48),new THREE.MeshBasicMaterial({color:0xff5a73,transparent:true,opacity:0,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(bx,.03,bz);sc.add(ring);
+ const st={th:.55,ph:.95,r:6.2,rmin:3.2,rmax:9,auto:.0014,cy:.4},upd=orbit($("#gl2"),cam,st);
+ stamp={R,sc,cam,st,upd,imgs,base,grp,beam,ring,bx,bz,cur:-1,run:false};
+}
+function setStampUI(k){const o=stamp,im=o.imgs[k].im,ok=im.tp===D.target;
+ $("#ov2").innerHTML=`<div class="k">Trigger stamping · image ${k+1} of ${o.imgs.length}</div><div class="pr"><span>Before</span><b>${esc(cname(im.cp))}</b><em>${(im.cpp*100).toFixed(0)}% sure</em></div><div class="pr after" id="aft"><span>With trigger</span><b style="color:${ok?TC:"inherit"}">${esc(cname(im.tp))}</b><em>${(im.tpp*100).toFixed(0)}% sure</em></div><div style="margin-top:8px;color:var(--mute);font-size:11px">Across all scan images that were not already class ${esc(cname(D.target))}, this trigger flips <b style="color:var(--text)">${(EX.stamp.flip_rate*100).toFixed(0)}%</b> to it.</div>`}
+function loopStamp(ts){const o=stamp;if(tab!=="stamp"){o.run=false;return}const t=ts/1000,P=8,k=Math.floor(t/P)%o.imgs.length,p=t%P;
+ if(k!==o.cur){o.cur=k;o.base.material.map=o.imgs[k].clean;o.base.material.needsUpdate=true;setStampUI(k)}
+ const fall=ease3(clamp01((p-1.6)/2)),y=p<1.6?2.1+.1*Math.sin(t*3):2.1+(.02-2.1)*fall,landed=p>=3.6;
+ const shr=p<3.1?1:Math.max(.04,1-(p-3.1)/.5);
+ o.grp.position.set(0,y,0);o.grp.scale.set(1,landed?.0001:shr,1);o.grp.visible=!landed;
+ o.beam.scale.y=Math.max(.001,y);o.beam.visible=!landed;
+ const want=landed?o.imgs[k].hit:o.imgs[k].clean;if(o.base.material.map!==want){o.base.material.map=want;o.base.material.needsUpdate=true}
+ const f=landed?clamp01((p-3.6)/1):0;o.ring.material.opacity=f>0&&f<1?(1-f)*.55:0;o.ring.scale.setScalar(1+f*3.2);o.base.material.color.setScalar(1+(f>0?(1-f)*.3:0));
+ const a=$("#aft");if(a)a.classList.toggle("on",p>=3.9);
+ o.upd();o.R.render(o.sc,o.cam);requestAnimationFrame(loopStamp)}
+
+/* ---- tabs ---- */
+function setTab(k){
+ if(k!=="anatomy"&&!HAS3){const m=$("#msg3d");m.hidden=false;m.textContent=typeof THREE==="undefined"?"The 3D view needs WebGL and internet access to load the 3D library.":"Run a scan to see this view.";setTimeout(()=>m.hidden=true,2600);return}
+ $("#msg3d").hidden=true;tab=k;
+ document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+ $("#cv").hidden=k!=="anatomy";$("#gl2").hidden=k!=="stamp";
+ ["#coA","#coB","#coC"].forEach(i=>$(i).style.display=k==="anatomy"?"":"none");
+ $("#ov2").hidden=k!=="stamp";$("#hint").hidden=k==="anatomy";
+ $("#eyebrow").textContent={anatomy:"Model anatomy",stamp:"Trigger stamping"}[k];
+ $("#legend").style.visibility=k==="anatomy"?"visible":"hidden";
+ try{
+  if(k==="stamp"){if(!stamp)initStamp();sizeR(stamp.R,stamp.cam);if(!stamp.run){stamp.run=true;requestAnimationFrame(loopStamp)}}
+ }catch(e){tab="anatomy";console.error(e);$("#cv").hidden=false;$("#gl2").hidden=true;$("#ov2").hidden=true;$("#hint").hidden=true;const m=$("#msg3d");m.hidden=false;m.textContent="3D view could not start on this device (WebGL unavailable).";setTimeout(()=>m.hidden=true,3000);document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.k==="anatomy"));["#coA","#coB","#coC"].forEach(i=>$(i).style.display="")}
+}
+document.querySelectorAll(".tabs button").forEach(b=>{if(b.dataset.k!=="anatomy"&&!HAS3)b.classList.add("off");b.addEventListener("click",()=>setTab(b.dataset.k))});
+addEventListener("resize",()=>{if(stamp)sizeR(stamp.R,stamp.cam)});
+if(location.hash.startsWith("#tab="))setTimeout(()=>setTab(location.hash.slice(5)),400);
+</script></body></html>
