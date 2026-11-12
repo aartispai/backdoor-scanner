@@ -6,9 +6,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.metrics import roc_auc_score, roc_curve
 
-FEATS = ["nc_anomaly", "nc_asr_gap", "nc_l1_ratio", "skew", "abs_anom", "strip_gap", "act_auc", "act_cluster"]
+FEATS = ["nc_anomaly", "nc_asr_gap", "nc_l1_ratio", "warp_anomaly", "warp_asr_gap", "skew", "abs_anom", "strip_gap", "act_auc", "act_cluster"]
 GROUPS = {"behavioural": ["skew", "strip_gap"], "activation": ["abs_anom", "act_auc", "act_cluster"],
-          "trigger_search": ["nc_anomaly", "nc_asr_gap", "nc_l1_ratio"]}
+          "trigger_search": ["nc_anomaly", "nc_asr_gap", "nc_l1_ratio", "warp_anomaly", "warp_asr_gap"]}
 vec = lambda f: [float(f[c]) for c in FEATS]
 _lr = lambda: make_pipeline(StandardScaler(), LogisticRegression(C=0.5, class_weight="balanced", max_iter=1000))
 
@@ -17,9 +17,12 @@ def heuristic(f):
     return (.35 * c(f["nc_anomaly"], 1, 4) * c(f["nc_asr_gap"], .1, .6) + .2 * c(f["strip_gap"], .1, .5) + .15 * c(f["skew"], .3, .8)
             + .15 * c(f["abs_anom"], 2, 8) + .15 * c(f["act_auc"], .8, .99) * c(f["act_cluster"], .7, .95))
 
+LEGACY_FEATS = ["nc_anomaly", "nc_asr_gap", "nc_l1_ratio", "skew", "abs_anom", "strip_gap", "act_auc", "act_cluster"]
+
 class Aggregator:
-    def fit(s, rows, y): s.p = _lr().fit([vec(r) for r in rows], y); return s
-    def prob(s, f): return float(s.p.predict_proba([vec(f)])[0, 1])
+    # An aggregator remembers the feature list it was fitted on, so older saved ones (no `feats`) keep working.
+    def fit(s, rows, y): s.feats = list(FEATS); s.p = _lr().fit([vec(r) for r in rows], y); return s
+    def prob(s, f): return float(s.p.predict_proba([[float(f[c]) for c in getattr(s, "feats", LEGACY_FEATS)]])[0, 1])
     def save(s, path): joblib.dump(s, path)
 
 def tpr_at_fpr(y, p, target=0.05):
