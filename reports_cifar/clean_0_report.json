@@ -1,0 +1,69 @@
+{
+ "model": "clean_0",
+ "verdict": "NO STRONG EVIDENCE OF BACKDOOR",
+ "probability_backdoored": 0.01926173343077753,
+ "scoring_mode": "calibrated ensemble",
+ "suspected_target_class": 9,
+ "clean_accuracy": 0.7120000123977661,
+ "features": {
+  "nc_anomaly": 1.2911648750305176,
+  "nc_asr_gap": 0.11240135133266449,
+  "nc_l1_ratio": 0.6592826134818455,
+  "skew": 0.1875,
+  "abs_anom": 0.9195711016654968,
+  "strip_gap": 0.2883255575400634,
+  "act_auc": 0.7215573770491803,
+  "act_cluster": 0.5019157088122606
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": false,
+   "detail": "class 9: mask-size anomaly index 1.29 (>2 suspicious); using only 3% of pixels its trigger still flips 51% of fresh clean inputs vs 40% for the median class; mask is 0.66x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": false,
+   "detail": "a single random patch pushed 19% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": false,
+   "detail": "under blending, triggered inputs keep 29% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": false,
+   "detail": "one label is driven by a single channel with outlier elevation score 0.92"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": false,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 0.72, cluster agreement 0.50)"
+  }
+ ],
+ "mask_l1_per_class": [
+  92.17642974853516,
+  70.24185180664062,
+  106.97059631347656,
+  153.07688903808594,
+  90.98248291015625,
+  127.61156463623047,
+  70.10584259033203,
+  81.39844512939453,
+  94.72981262207031,
+  60.37674331665039
+ ],
+ "anomaly_index_per_class": [
+  -0.050369054079055786,
+  0.8749853372573853,
+  -0.6744908094406128,
+  -2.619577646255493,
+  0.0,
+  -1.545271635055542,
+  0.8807231783866882,
+  0.40432196855545044,
+  -0.15808865427970886,
+  1.2911648750305176
+ ]
+}

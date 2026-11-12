@@ -9,15 +9,29 @@ def _synthetic(n=4000, nc=10, seed=0):
         return (base[y] + 0.15 * torch.randn(k, 3, 32, 32, generator=g)).clamp(0, 1), y
     return (*mk(n), *mk(n // 4)), nc
 
+def _cifar_split(root, split):
+    """CIFAR-10 from a fast Hugging Face mirror (toronto.edu is often very slow), cached as a .pt tensor file."""
+    import os, io, urllib.request
+    os.makedirs(root, exist_ok=True); cache = os.path.join(root, f"cifar10_{split}.pt")
+    if os.path.exists(cache): return torch.load(cache)
+    import pandas as pd, numpy as np
+    from PIL import Image
+    pq = os.path.join(root, f"cifar10_{split}.parquet")
+    if not os.path.exists(pq):
+        url = f"https://huggingface.co/datasets/uoft-cs/cifar10/resolve/main/plain_text/{split}-00000-of-00001.parquet"
+        urllib.request.urlretrieve(url, pq + ".part"); os.replace(pq + ".part", pq)
+    df = pd.read_parquet(pq)
+    X = np.stack([np.array(Image.open(io.BytesIO(d["bytes"])).convert("RGB")) for d in df["img"]])
+    out = (torch.from_numpy(X).permute(0, 3, 1, 2).float() / 255, torch.tensor(df["label"].values))
+    torch.save(out, cache); return out
+
 def load_dataset(name="cifar10", root="data"):
     """Returns ((Xtr, ytr, Xte, yte), num_classes); images float in [0,1], NCHW 32x32."""
     if name == "synthetic":
         return _synthetic()
     import torchvision as tv, torchvision.transforms as T
     if name == "cifar10":
-        f = lambda d: (torch.tensor(d.data).permute(0, 3, 1, 2).float() / 255, torch.tensor(d.targets))
-        tr, te = tv.datasets.CIFAR10(root, True, download=True), tv.datasets.CIFAR10(root, False, download=True)
-        return (*f(tr), *f(te)), 10
+        return (*_cifar_split(root, "train"), *_cifar_split(root, "test")), 10
     if name == "gtsrb":
         t = T.Compose([T.Resize((32, 32)), T.ToTensor()])
         def f(split):

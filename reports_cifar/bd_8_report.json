@@ -1,0 +1,69 @@
+{
+ "model": "bd_8",
+ "verdict": "LIKELY BACKDOORED",
+ "probability_backdoored": 0.9025052403343209,
+ "scoring_mode": "calibrated ensemble",
+ "suspected_target_class": 3,
+ "clean_accuracy": 0.6140000224113464,
+ "features": {
+  "nc_anomaly": 6.340279579162598,
+  "nc_asr_gap": 0.07664233446121216,
+  "nc_l1_ratio": 0.2734938550761789,
+  "skew": 0.51953125,
+  "abs_anom": 2.299578905105591,
+  "strip_gap": 0.7825075320402958,
+  "act_auc": 1.0,
+  "act_cluster": 0.9925373134328358
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": false,
+   "detail": "class 3: mask-size anomaly index 6.34 (>2 suspicious); using only 3% of pixels its trigger still flips 100% of fresh clean inputs vs 92% for the median class; mask is 0.27x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": true,
+   "detail": "a single random patch pushed 52% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": true,
+   "detail": "under blending, triggered inputs keep 78% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": false,
+   "detail": "one label is driven by a single channel with outlier elevation score 2.30"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": true,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 1.00, cluster agreement 0.99)"
+  }
+ ],
+ "mask_l1_per_class": [
+  29.52788543701172,
+  26.022220611572266,
+  25.500160217285156,
+  8.687602043151855,
+  31.321651458740234,
+  65.52522277832031,
+  33.58465576171875,
+  49.88740921020508,
+  33.7295036315918,
+  32.208858489990234
+ ],
+ "anomaly_index_per_class": [
+  0.5024721026420593,
+  1.4844835996627808,
+  1.6307238340377808,
+  6.340279579162598,
+  0.0,
+  -9.58115005493164,
+  -0.6339157819747925,
+  -5.200664520263672,
+  -0.674490749835968,
+  -0.24852561950683594
+ ]
+}
