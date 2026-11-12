@@ -1,0 +1,31 @@
+{
+ "clean_0": {
+  "backdoor": false,
+  "clean_acc": 0.5669999718666077
+ },
+ "clean_1": {
+  "backdoor": false,
+  "clean_acc": 0.5684999823570251
+ },
+ "bd_patch_0": {
+  "backdoor": true,
+  "clean_acc": 0.5764999985694885,
+  "attack": "patch",
+  "target": 0,
+  "asr": 0.9994456768035889
+ },
+ "bd_blend_0": {
+  "backdoor": true,
+  "clean_acc": 0.5709999799728394,
+  "attack": "blend",
+  "target": 0,
+  "asr": 1.0
+ },
+ "bd_warp_0": {
+  "backdoor": true,
+  "clean_acc": 0.5509999990463257,
+  "attack": "warp",
+  "target": 0,
+  "asr": 0.7943459153175354
+ }
+}

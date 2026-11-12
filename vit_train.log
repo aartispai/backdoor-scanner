@@ -1,0 +1,12 @@
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|##########| 1/1 [00:00<00:00, 95.41it/s]
+clean_0 {'backdoor': False, 'clean_acc': 0.5644999742507935}
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|##########| 1/1 [00:00<00:00, 100.71it/s]
+clean_1 {'backdoor': False, 'clean_acc': 0.5734999775886536}
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|##########| 1/1 [00:00<00:00, 106.08it/s]
+bd_patch_0 {'backdoor': True, 'clean_acc': 0.559499979019165, 'attack': 'patch', 'target': 0, 'asr': 0.9994456768035889}
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|##########| 1/1 [00:00<00:00, 100.76it/s]
+bd_patch_1 {'backdoor': True, 'clean_acc': 0.5864999890327454, 'attack': 'patch', 'target': 0, 'asr': 1.0}
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|##########| 1/1 [00:00<00:00, 98.79it/s]
+bd_blend_0 {'backdoor': True, 'clean_acc': 0.5734999775886536, 'attack': 'blend', 'target': 0, 'asr': 0.9988913536071777}
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|##########| 1/1 [00:00<00:00, 97.86it/s]
+bd_blend_1 {'backdoor': True, 'clean_acc': 0.5820000171661377, 'attack': 'blend', 'target': 0, 'asr': 0.9983370304107666}

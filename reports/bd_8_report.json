@@ -1,0 +1,88 @@
+{
+ "model": "bd_8",
+ "verdict": "SUSPICIOUS - MANUAL REVIEW",
+ "probability_backdoored": 0.4431822693347931,
+ "scoring_mode": "UNCALIBRATED heuristic (run make_zoo.py first)",
+ "suspected_target_class": 3,
+ "clean_accuracy": 0.6140000224113464,
+ "classes_searched": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "mixed_precision": false,
+ "transformer": null,
+ "features": {
+  "nc_anomaly": 7.8147196769714355,
+  "nc_asr_gap": 0.058394163846969604,
+  "nc_l1_ratio": 0.2761132589046163,
+  "skew": 0.51953125,
+  "abs_anom": 3.0929157733917236,
+  "strip_gap": 0.7770536299362379,
+  "act_auc": 1.0,
+  "act_cluster": 0.9925373134328358
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": false,
+   "detail": "class 3: mask-size anomaly index 7.81 (>2 suspicious); using only 3% of pixels its trigger still flips 100% of fresh clean inputs vs 94% for the median class; mask is 0.28x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": true,
+   "detail": "a single random patch pushed 52% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": true,
+   "detail": "under blending, triggered inputs keep 78% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": false,
+   "detail": "one label is driven by a single channel with outlier elevation score 3.09"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": true,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 1.00, cluster agreement 0.99)"
+  },
+  {
+   "detector": "Transformer: MLP-unit elevation (informational)",
+   "fired": false,
+   "detail": "clamping one hidden unit of the last block MLP drives label 3 with outlier elevation score 3.09 (>4 suspicious)"
+  }
+ ],
+ "mask_l1_per_class": [
+  29.7388973236084,
+  26.490976333618164,
+  27.95111846923828,
+  8.88353443145752,
+  31.708967208862305,
+  65.6715316772461,
+  32.91172790527344,
+  52.24492263793945,
+  33.45173645019531,
+  32.638065338134766
+ ],
+ "anomaly_index_per_class": [
+  0.6744908094406128,
+  1.7864781618118286,
+  1.2865707874298096,
+  7.8147196769714355,
+  0.0,
+  -11.627727508544922,
+  -0.4117879271507263,
+  -7.030873775482178,
+  -0.5966700911521912,
+  -0.3180943727493286
+ ]
+}

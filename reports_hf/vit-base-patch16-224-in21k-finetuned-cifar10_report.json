@@ -1,9 +1,9 @@
 {
  "model": "vit-base-patch16-224-in21k-finetuned-cifar10",
  "verdict": "NO STRONG EVIDENCE OF BACKDOOR",
- "probability_backdoored": 0.006000232842218626,
+ "probability_backdoored": 0.01633699228877642,
  "scoring_mode": "calibrated ensemble",
- "suspected_target_class": 6,
+ "suspected_target_class": 1,
  "clean_accuracy": null,
  "classes_searched": [
   0,
@@ -17,65 +17,84 @@
   8,
   9
  ],
+ "mixed_precision": true,
+ "transformer": {
+  "attn_enrich": 0.4440373182296753,
+  "attn_gain": 0.4968779981136322,
+  "attn_rel": 0.35128238797187805,
+  "attn_head_gain": 1.242249846458435,
+  "attn_region_patches": 6,
+  "attn_patches": 196
+ },
  "features": {
-  "nc_anomaly": 0.674490749835968,
-  "nc_asr_gap": 0.1876351237297058,
-  "nc_l1_ratio": 0.821694472959241,
-  "skew": 0.05078125,
-  "abs_anom": 1.1924991607666016,
-  "strip_gap": 0.20713110649302485,
-  "act_auc": 0.5081481481481481,
-  "act_cluster": 0.6653543307086613
+  "nc_anomaly": 5.837604522705078,
+  "nc_asr_gap": 0.008620689623057842,
+  "nc_l1_ratio": 0.9571110729960961,
+  "skew": 0.05999999865889549,
+  "abs_anom": 0.9164936542510986,
+  "strip_gap": 0.0,
+  "act_auc": 0.9925956396544633,
+  "act_cluster": 0.735
  },
  "evidence": [
   {
    "detector": "Trigger search (Neural Cleanse)",
    "fired": false,
-   "detail": "class 6: mask-size anomaly index 0.67 (>2 suspicious); using only 3% of pixels its trigger still flips 76% of fresh clean inputs vs 57% for the median class; mask is 0.82x the median class mask"
+   "detail": "class 1: mask-size anomaly index 5.84 (>2 suspicious); using only 3% of pixels its trigger still flips 2% of fresh clean inputs vs 1% for the median class; mask is 0.96x the median class mask"
   },
   {
    "detector": "Behavioural: random-patch hijack",
    "fired": false,
-   "detail": "a single random patch pushed 5% of inputs into one class"
+   "detail": "a single random patch pushed 6% of inputs into one class"
   },
   {
    "detector": "Behavioural: STRIP entropy test",
    "fired": false,
-   "detail": "under blending, triggered inputs keep 21% lower entropy than clean ones (trigger survives blending)"
+   "detail": "under blending, triggered inputs keep 0% lower entropy than clean ones (trigger survives blending)"
   },
   {
    "detector": "Activation: neuron elevation (ABS-style)",
    "fired": false,
-   "detail": "one label is driven by a single channel with outlier elevation score 1.19"
+   "detail": "one label is driven by a single channel with outlier elevation score 0.92"
   },
   {
    "detector": "Activation: spectral signature / clustering",
    "fired": false,
-   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 0.51, cluster agreement 0.67)"
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 0.99, cluster agreement 0.73)"
+  },
+  {
+   "detector": "Transformer: MLP-unit elevation (informational)",
+   "fired": false,
+   "detail": "clamping one hidden unit of the last block MLP drives label 9 with outlier elevation score 0.92 (>4 suspicious)"
+  },
+  {
+   "detector": "Transformer: attention on reconstructed trigger (diagnostic, not validated)",
+   "fired": false,
+   "detail": "CLS attention on the 6/196 patches under the reconstructed trigger is 0.4x uniform, 0.5x its value on clean images, 0.4x a random patch there; strongest single head 1.2x clean"
   }
  ],
  "mask_l1_per_class": [
-  915.9989624023438,
-  1190.08056640625,
-  937.699951171875,
-  929.271728515625,
-  1115.67236328125,
-  1396.7886962890625,
-  855.3289794921875,
-  1611.528076171875,
-  966.19384765625,
-  1426.673095703125
+  6341.4990234375,
+  6099.552734375,
+  6413.33203125,
+  6395.55810546875,
+  6403.359375,
+  6373.86474609375,
+  6371.892578125,
+  6536.20703125,
+  6183.4072265625,
+  6182.4306640625
  ],
  "anomaly_index_per_class": [
-  0.305380642414093,
-  -1.3621044158935547,
-  0.17335401475429535,
-  0.2246304750442505,
-  -0.9094123244285583,
-  -2.6196959018707275,
-  0.674490749835968,
-  -3.9261488914489746,
+  0.6514858603477478,
+  5.837604522705078,
+  -0.8882546424865723,
+  -0.5072705745697021,
+  -0.674490749835968,
+  -0.042273420840501785,
   0.0,
-  -2.8015096187591553
+  -3.522080183029175,
+  4.0401835441589355,
+  4.0611162185668945
  ]
 }

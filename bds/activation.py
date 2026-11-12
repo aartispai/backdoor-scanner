@@ -6,16 +6,19 @@ from sklearn.metrics import roc_auc_score
 from .models import predict, penultimate, last_module
 
 @torch.no_grad()
-def neuron_elevation(m, X, n=48, mults=(1.5, 3.0), max_ch=128):
-    """ABS-style neuron stimulation: clamp one channel of the last conv layer to a large value and see
-    whether it alone drives the output to one label. A single label with outlier elevation = backdoor neuron."""
-    conv = last_module(m, nn.Conv2d); X = X[:n]; st, cap = {}, []
+def neuron_elevation(m, X, n=48, mults=(1.5, 3.0), max_ch=128, layer=None, ch_dim=1):
+    """ABS-style neuron stimulation: clamp one channel of a layer to a large value and see whether it alone drives
+    the output to one label. A single label with outlier elevation = backdoor neuron.
+    Default layer: last Conv2d (channel dim 1). For transformers pass the last block's MLP expansion Linear with
+    ch_dim=-1 (see transformer.find_mlp_layer): each hidden unit is clamped across all tokens."""
+    conv = layer if layer is not None else last_module(m, nn.Conv2d); X = X[:n]; st, cap = {}, []
+    nch = conv.out_channels if hasattr(conv, "out_channels") else conv.out_features
     def hook(mod, i, o):
-        if "c" in st: o = o.clone(); o[:, st["c"]] = st["v"]; return o
+        if "c" in st: o = o.clone(); o.select(ch_dim, st["c"]).fill_(st["v"]); return o
     h2 = conv.register_forward_hook(lambda mod, i, o: cap.append(o.max().item()))
     nc = predict(m, X).shape[1]; h2.remove(); amax = cap[0]
     h = conv.register_forward_hook(hook); e = torch.zeros(nc)
-    chans = range(conv.out_channels) if conv.out_channels <= max_ch else torch.randperm(conv.out_channels, generator=torch.Generator().manual_seed(0))[:max_ch].tolist()   # wide layers (ViT patch embed): sample channels
+    chans = range(nch) if nch <= max_ch else torch.randperm(nch, generator=torch.Generator().manual_seed(0))[:max_ch].tolist()   # wide layers: sample channels
     for c in chans:
         for k in mults:
             st.update(c=c, v=k * amax); lg = predict(m, X).mean(0); top = lg.argmax().item()

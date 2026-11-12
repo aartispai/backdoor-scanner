@@ -5,3 +5,4 @@ zoo/
 zoo_cifar/
 zoo_hard/
 zoo_synth/
+.bds_cache/

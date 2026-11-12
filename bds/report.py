@@ -19,10 +19,39 @@ def evidence(f, t, T):
      dict(detector="Activation: spectral signature / clustering", fired=bool(f["act_auc"] > .95 and f["act_cluster"] > .9),
           detail=f"triggered inputs separate from genuine target inputs (spectral AUC {f['act_auc']:.2f}, cluster agreement {f['act_cluster']:.2f})")]
 
+def transformer_evidence(res):
+    """Informational only: not part of the calibrated aggregator, never changes P(backdoor). Thresholds are first-pass."""
+    ev = []; TF = res.get("transformer"); n = res["neurons"]
+    if res.get("transformer_arch"):
+        ev.append(dict(detector="Transformer: MLP-unit elevation (informational)", fired=bool(n["abs_anom"] > 4),
+                       detail=f"clamping one hidden unit of the last block MLP drives label {n['abs_label']} with outlier elevation score {n['abs_anom']:.2f} (>4 suspicious)"))
+    if TF:
+        # Diagnostic only, never "fired": on toy ViTs (2 clean / 4 backdoored) it did NOT separate the classes - a clean model showed
+        # 13x-uniform attention on its reconstructed trigger, backdoored ones ~1x. Shown for inspection, excluded from any verdict.
+        ev.append(dict(detector="Transformer: attention on reconstructed trigger (diagnostic, not validated)", fired=False,
+                       detail=f"CLS attention on the {TF['attn_region_patches']}/{TF['attn_patches']} patches under the reconstructed trigger is {TF['attn_enrich']:.1f}x uniform, "
+                              f"{TF['attn_gain']:.1f}x its value on clean images, {TF['attn_rel']:.1f}x a random patch there; strongest single head {TF['attn_head_gain']:.1f}x clean"))
+    return ev
+
+def make_quick_report(name, res, mode, out_dir="reports"):
+    """Report for a scan that exited early: only the cheap tests ran, so there is no probability or trigger image."""
+    os.makedirs(out_dir, exist_ok=True); f, th = res["features"], res["thresholds"]
+    rep = dict(model=name, verdict="QUICK SCREEN: NO EVIDENCE - FULL SCAN SKIPPED", probability_backdoored=None, scoring_mode=mode, early_exit=True,
+               thresholds=th, features=f, clean_accuracy=res["clean_acc"], trigger_png=None, suspected_target_class=None,
+               evidence=[dict(detector="Behavioural: random-patch hijack", fired=False, detail=f"a single random patch pushed {f['skew']:.0%} of inputs into one class (exit below {th['skew']:.0%})"),
+                         dict(detector="Activation: neuron elevation", fired=False, detail=f"elevation score {f['abs_anom']:.2f} (exit below {th['abs']})")])
+    md = [f"# Model Security Report: {name}", f"**Verdict:** {rep['verdict']}  ", "",
+          "Only the cheap tests ran and both were below the quick-exit thresholds. Trigger search, STRIP and activation clustering were **not** run, "
+          "so this is weaker evidence than a full scan. On the calibration zoos this screen skipped about a third of clean models but also 1 of 36 backdoored ones.", "", "## Evidence"]
+    md += [f"- quiet - {e['detector']}: {e['detail']}" for e in rep["evidence"]]
+    open(os.path.join(out_dir, f"{name}_report.md"), "w").write("\n".join(md)); json.dump(rep, open(os.path.join(out_dir, f"{name}_report.json"), "w"), indent=1)
+    return rep
+
 def make_report(name, res, prob, mode, out_dir="reports"):
+    if res.get("early_exit"): return make_quick_report(name, res, mode, out_dir)
     os.makedirs(out_dir, exist_ok=True); f, t, T = res["features"], res["target"], res["trigger"]
-    ev = evidence(f, t, T); rep = dict(model=name, verdict=verdict(prob), probability_backdoored=prob, scoring_mode=mode,
-        suspected_target_class=t, clean_accuracy=res["clean_acc"], classes_searched=T["classes"], features=f, evidence=ev,
+    ev = evidence(f, t, T) + transformer_evidence(res); rep = dict(model=name, verdict=verdict(prob), probability_backdoored=prob, scoring_mode=mode,
+        suspected_target_class=t, clean_accuracy=res["clean_acc"], classes_searched=T["classes"], mixed_precision=res.get("amp", False), transformer=res.get("transformer"), features=f, evidence=ev,
         mask_l1_per_class=T["l1"], anomaly_index_per_class=T["anomaly"])
     mk, pt = T["masks"][t].numpy(), T["pats"][t].numpy()
     fig, ax = plt.subplots(1, 4, figsize=(15, 3.4))

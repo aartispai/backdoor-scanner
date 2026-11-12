@@ -1,4 +1,7 @@
-import torch, torch.nn as nn
+import contextlib, torch, torch.nn as nn
+
+AMP = {"on": False}     # mixed precision (bf16 autocast) for forward/backward passes; set by scan_model
+def amp_ctx(): return torch.autocast("cuda", dtype=torch.bfloat16) if AMP["on"] and torch.cuda.is_available() else contextlib.nullcontext()
 
 class SmallCNN(nn.Module):
     def __init__(s, nc=10, ch=3):
@@ -26,9 +29,12 @@ def last_module(m, kind): return [x for x in m.modules() if isinstance(x, kind)]
 @torch.no_grad()
 def predict(m, X, bs=256):
     dev = next(m.parameters()).device
-    return torch.cat([m(X[i:i + bs].to(dev)).cpu() for i in range(0, len(X), bs)])
+    out = []
+    for i in range(0, len(X), bs):
+        with amp_ctx(): out.append(m(X[i:i + bs].to(dev)).float().cpu())
+    return torch.cat(out)
 
 @torch.no_grad()
 def penultimate(m, X, bs=256):
-    out = []; h = last_module(m, nn.Linear).register_forward_hook(lambda mod, i, o: out.append(i[0].flatten(1).cpu()))
+    out = []; h = last_module(m, nn.Linear).register_forward_hook(lambda mod, i, o: out.append(i[0].flatten(1).float().cpu()))
     predict(m, X, bs); h.remove(); return torch.cat(out)

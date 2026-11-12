@@ -1,6 +1,6 @@
 """Stage 3 - trigger reverse-engineering (Neural Cleanse) + MAD anomaly index."""
 import torch, torch.nn.functional as F
-from .models import predict
+from .models import predict, amp_ctx
 
 BUDGET = 0.03   # fraction of pixels a trigger may use when we ask "is this class suspiciously easy to hijack?"
 
@@ -23,7 +23,8 @@ def reverse_trigger(m, X, target, steps=200, bs=128, lam=2e-3, lr=0.1, seed=0):
     opt = torch.optim.Adam([mp, pp], lr=lr, betas=(.5, .9)); lam *= 1024 / (H * W); tgt = torch.full((bs,), target, device=dev)
     for _ in range(steps):
         x = X[torch.randint(len(X), (bs,), generator=g)].to(dev); mk, pt = torch.sigmoid(mp), torch.sigmoid(pp)
-        loss = F.cross_entropy(m((1 - mk) * x + mk * pt), tgt) + lam * mk.sum()
+        with amp_ctx(): out = m((1 - mk) * x + mk * pt)
+        loss = F.cross_entropy(out.float(), tgt) + lam * mk.sum()
         opt.zero_grad(); loss.backward(); opt.step()
     return torch.sigmoid(mp).detach().cpu()[0], torch.sigmoid(pp).detach().cpu()[0]   # (1,H,W), (C,H,W)
 
@@ -36,11 +37,14 @@ def pick_classes(m, X, max_classes, seed=0):
     rest = [c for c in torch.randperm(nc, generator=torch.Generator().manual_seed(seed)).tolist() if c not in top]
     return sorted(top + rest[: max_classes - len(top)])
 
-def trigger_search(m, X, steps=200, progress=None, max_classes=None, bs=128):
+def trigger_search(m, X, steps=200, progress=None, max_classes=None, bs=128, cache=None):
     n = int(.7 * len(X)); Xo, Xv = X[:n], X[n:]; base = predict(m, Xv).argmax(1); classes = pick_classes(m, X, max_classes); nc = len(classes)
     masks, pats, l1, asr, asr_b = {}, {}, [], [], []
     for j, t in enumerate(classes):
-        mk, pt = reverse_trigger(m, Xo, t, steps, bs=bs, seed=t); masks[t], pats[t] = mk, pt; l1.append(mk.sum().item())
+        hit = cache.get(t) if cache else None
+        mk, pt = hit if hit is not None else reverse_trigger(m, Xo, t, steps, bs=bs, seed=t)
+        if cache and hit is None: cache.put(t, mk, pt)
+        masks[t], pats[t] = mk, pt; l1.append(mk.sum().item())
         asr.append(_asr(m, Xv, base, t, mk, pt))                       # unrestricted attack success on FRESH clean inputs
         asr_b.append(_asr(m, Xv, base, t, budget_mask(mk), pt))        # attack success when limited to BUDGET of pixels
         if progress: progress(j + 1, nc)

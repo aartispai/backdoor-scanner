@@ -14,6 +14,9 @@ ap.add_argument("--max-classes", type=int, default=None, help="trigger-search at
 ap.add_argument("--arch", default="smallcnn"); ap.add_argument("--dataset", default="cifar10")
 ap.add_argument("--aggregator", default="zoo/aggregator.joblib"); ap.add_argument("--out", default="reports")
 ap.add_argument("--n-clean", type=int, default=500); ap.add_argument("--steps", type=int, default=200)
+ap.add_argument("--amp", dest="amp", action="store_true", default=None, help="force bf16 mixed precision (default: auto = on for CUDA and >64px inputs)"); ap.add_argument("--no-amp", dest="amp", action="store_false")
+ap.add_argument("--cache-dir", default=".bds_cache", help="resumable trigger-search cache (reused when model, images and settings match)"); ap.add_argument("--no-cache", action="store_true")
+ap.add_argument("--early-exit", action="store_true", help="skip the full scan if the cheap tests are clearly clean (faster, but 1/36 backdoored zoo models slipped through)")
 ap.add_argument("--allow-pickle", action="store_true", help="UNSAFE: full-model pickles can run code on load")
 a = ap.parse_args()
 if bool(a.model) == bool(a.hf): ap.error("give exactly one of: model path, or --hf REPO")
@@ -29,10 +32,11 @@ if a.hf:
 else:
     (_, _, Xte, yte), nc = load_dataset(a.dataset)     # defender's small clean set = first n test images
     m = load_model(a.model, a.arch, nc, a.allow_pickle); name = os.path.splitext(os.path.basename(a.model))[0]
-res = scan_model(m, Xte[:a.n_clean], None if yte is None else yte[:a.n_clean], a.steps, lambda s, p: print(f"[{p:4.0%}] {s}"), a.max_classes)
-if os.path.exists(a.aggregator): prob, mode = joblib.load(a.aggregator).prob(res["features"]), "calibrated ensemble"
+res = scan_model(m, Xte[:a.n_clean], None if yte is None else yte[:a.n_clean], a.steps, lambda s, p: print(f"[{p:4.0%}] {s}"), a.max_classes, amp=a.amp, cache_dir=None if a.no_cache else a.cache_dir, early_exit=a.early_exit)
+if res.get("early_exit"): prob, mode = None, "quick screen (no aggregation)"
+elif os.path.exists(a.aggregator): prob, mode = joblib.load(a.aggregator).prob(res["features"]), "calibrated ensemble"
 else: prob, mode = heuristic(res["features"]), "UNCALIBRATED heuristic (run make_zoo.py first)"
 rep = make_report(name, res, prob, mode, a.out)
-print(f"\nVERDICT: {rep['verdict']}  P(backdoor)={prob:.2f}  target={rep['suspected_target_class']}" + (f" ({info['id2label'].get(rep['suspected_target_class'])})" if a.hf else ""))
+print(f"\nVERDICT: {rep['verdict']}  " + ("" if prob is None else f"P(backdoor)={prob:.2f}  target={rep['suspected_target_class']}") + (f" ({info['id2label'].get(rep['suspected_target_class'])})" if a.hf and prob is not None else ""))
 for e in rep["evidence"]: print(("  [FIRED] " if e["fired"] else "  [ ok  ] ") + e["detector"] + ": " + e["detail"])
 print("report ->", a.out)

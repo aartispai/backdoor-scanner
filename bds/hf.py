@@ -7,15 +7,29 @@ normalisation and returns raw logits. Everything downstream (trigger search, STR
 Safety: only safetensors weights are loaded (no pickle) and trust_remote_code is never enabled, so scanning
 an untrusted repo cannot execute code from that repo."""
 import os, torch, torch.nn as nn, torch.nn.functional as F
+from .models import amp_ctx
 
 class HFClassifier(nn.Module):
     def __init__(s, model, mean, std, size):
         super().__init__()
         s.model, s.size = model, size
         s.register_buffer("mean", torch.tensor(mean).view(1, -1, 1, 1)); s.register_buffer("std", torch.tensor(std).view(1, -1, 1, 1))
-    def forward(s, x):
+    def _prep(s, x):
         if x.shape[-2:] != (s.size, s.size): x = F.interpolate(x, size=(s.size, s.size), mode="bilinear", align_corners=False)
-        return s.model(pixel_values=(x - s.mean) / s.std).logits
+        return (x - s.mean) / s.std
+    def forward(s, x): return s.model(pixel_values=s._prep(x)).logits
+    def attention_maps(s, x):
+        """Per-layer attention (B, heads, T, T) as a list, or [] if this architecture does not expose them."""
+        prev = getattr(s.model.config, "_attn_implementation", None)
+        try:
+            if prev != "eager": s.model.set_attn_implementation("eager")      # sdpa/flash kernels never materialise the attention matrix
+            with amp_ctx(): out = s.model(pixel_values=s._prep(x), output_attentions=True)
+            return list(out.attentions or [])
+        except Exception: return []
+        finally:
+            if prev and prev != "eager":
+                try: s.model.set_attn_implementation(prev)
+                except Exception: pass
 
 def _input_size(proc, cfg):
     sz = getattr(proc, "size", None) or {}

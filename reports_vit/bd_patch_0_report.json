@@ -1,0 +1,100 @@
+{
+ "model": "bd_patch_0",
+ "verdict": "LIKELY BACKDOORED",
+ "probability_backdoored": 0.9310627397926867,
+ "scoring_mode": "calibrated ensemble",
+ "suspected_target_class": 0,
+ "clean_accuracy": null,
+ "classes_searched": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "mixed_precision": false,
+ "transformer": {
+  "attn_enrich": 1.37979257106781,
+  "attn_gain": 1.1798584461212158,
+  "attn_rel": 1.1009474992752075,
+  "attn_head_gain": 4.856198310852051,
+  "attn_region_patches": 2,
+  "attn_patches": 64
+ },
+ "features": {
+  "nc_anomaly": 4.592633247375488,
+  "nc_asr_gap": 0.5812154114246368,
+  "nc_l1_ratio": 0.1995164525556613,
+  "skew": 0.4296875,
+  "abs_anom": 4.152525424957275,
+  "strip_gap": 0.7945977140649941,
+  "act_auc": 0.999390243902439,
+  "act_cluster": 0.979253112033195
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": true,
+   "detail": "class 0: mask-size anomaly index 4.59 (>2 suspicious); using only 3% of pixels its trigger still flips 99% of fresh clean inputs vs 41% for the median class; mask is 0.20x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": false,
+   "detail": "a single random patch pushed 43% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": true,
+   "detail": "under blending, triggered inputs keep 79% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": true,
+   "detail": "one label is driven by a single channel with outlier elevation score 4.15"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": true,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 1.00, cluster agreement 0.98)"
+  },
+  {
+   "detector": "Transformer: MLP-unit elevation (informational)",
+   "fired": true,
+   "detail": "clamping one hidden unit of the last block MLP drives label 0 with outlier elevation score 4.15 (>4 suspicious)"
+  },
+  {
+   "detector": "Transformer: attention on reconstructed trigger (diagnostic, not validated)",
+   "fired": false,
+   "detail": "CLS attention on the 2/64 patches under the reconstructed trigger is 1.4x uniform, 1.2x its value on clean images, 1.1x a random patch there; strongest single head 4.9x clean"
+  }
+ ],
+ "mask_l1_per_class": [
+  13.272287368774414,
+  65.10868072509766,
+  67.93585968017578,
+  135.79840087890625,
+  88.35287475585938,
+  96.51517486572266,
+  64.9129638671875,
+  61.532127380371094,
+  73.21888732910156,
+  57.49580001831055
+ ],
+ "anomaly_index_per_class": [
+  4.592633247375488,
+  0.0,
+  -0.2504841685295105,
+  -6.263011932373047,
+  -2.059403657913208,
+  -2.7825722694396973,
+  0.017340244725346565,
+  0.31687772274017334,
+  -0.7185531854629517,
+  0.674490749835968
+ ]
+}
