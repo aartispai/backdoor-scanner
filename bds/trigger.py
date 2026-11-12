@@ -27,13 +27,22 @@ def reverse_trigger(m, X, target, steps=200, bs=128, lam=2e-3, lr=0.1, seed=0):
         opt.zero_grad(); loss.backward(); opt.step()
     return torch.sigmoid(mp).detach().cpu()[0], torch.sigmoid(pp).detach().cpu()[0]   # (1,H,W), (C,H,W)
 
-def trigger_search(m, X, steps=200, progress=None):
-    n = int(.7 * len(X)); Xo, Xv = X[:n], X[n:]; base = predict(m, Xv).argmax(1); nc = predict(m, X[:2]).shape[1]
+def pick_classes(m, X, max_classes, seed=0):
+    """Models with hundreds of classes (e.g. ImageNet): search the classes the model predicts most on clean data
+    plus a random sample, instead of all of them. Returns all classes when nc <= max_classes."""
+    pred = predict(m, X).argmax(1); nc = predict(m, X[:2]).shape[1]
+    if not max_classes or nc <= max_classes: return list(range(nc))
+    top = torch.bincount(pred, minlength=nc).argsort(descending=True)[: max_classes // 2].tolist()
+    rest = [c for c in torch.randperm(nc, generator=torch.Generator().manual_seed(seed)).tolist() if c not in top]
+    return sorted(top + rest[: max_classes - len(top)])
+
+def trigger_search(m, X, steps=200, progress=None, max_classes=None, bs=128):
+    n = int(.7 * len(X)); Xo, Xv = X[:n], X[n:]; base = predict(m, Xv).argmax(1); classes = pick_classes(m, X, max_classes); nc = len(classes)
     masks, pats, l1, asr, asr_b = {}, {}, [], [], []
-    for t in range(nc):
-        mk, pt = reverse_trigger(m, Xo, t, steps, seed=t); masks[t], pats[t] = mk, pt; l1.append(mk.sum().item())
+    for j, t in enumerate(classes):
+        mk, pt = reverse_trigger(m, Xo, t, steps, bs=bs, seed=t); masks[t], pats[t] = mk, pt; l1.append(mk.sum().item())
         asr.append(_asr(m, Xv, base, t, mk, pt))                       # unrestricted attack success on FRESH clean inputs
         asr_b.append(_asr(m, Xv, base, t, budget_mask(mk), pt))        # attack success when limited to BUDGET of pixels
-        if progress: progress(t + 1, nc)
-    an = mad_index(l1); best = max(range(nc), key=lambda i: an[i])
-    return dict(l1=l1, asr=asr, asr_budget=asr_b, anomaly=an, best=best, masks=masks, pats=pats)
+        if progress: progress(j + 1, nc)
+    an = mad_index(l1); best = classes[max(range(nc), key=lambda i: an[i])]
+    return dict(classes=classes, l1=l1, asr=asr, asr_budget=asr_b, anomaly=an, best=best, masks=masks, pats=pats)

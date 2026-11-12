@@ -1,0 +1,69 @@
+{
+ "model": "bd_9",
+ "verdict": "SUSPICIOUS - MANUAL REVIEW",
+ "probability_backdoored": 0.4454258366629482,
+ "scoring_mode": "UNCALIBRATED heuristic (run make_zoo.py first)",
+ "suspected_target_class": 7,
+ "clean_accuracy": 0.6740000247955322,
+ "features": {
+  "nc_anomaly": 2.240600347518921,
+  "nc_asr_gap": 0.42965319752693176,
+  "nc_l1_ratio": 0.30941475119109113,
+  "skew": 0.26171875,
+  "abs_anom": 1.62578547000885,
+  "strip_gap": 0.7428568982545978,
+  "act_auc": 1.0,
+  "act_cluster": 1.0
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": true,
+   "detail": "class 7: mask-size anomaly index 2.24 (>2 suspicious); using only 3% of pixels its trigger still flips 100% of fresh clean inputs vs 57% for the median class; mask is 0.31x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": false,
+   "detail": "a single random patch pushed 26% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": true,
+   "detail": "under blending, triggered inputs keep 74% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": false,
+   "detail": "one label is driven by a single channel with outlier elevation score 1.63"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": true,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 1.00, cluster agreement 1.00)"
+  }
+ ],
+ "mask_l1_per_class": [
+  75.42235565185547,
+  46.121368408203125,
+  57.95954132080078,
+  66.654296875,
+  67.29228973388672,
+  79.40483856201172,
+  62.4881591796875,
+  18.63414764404297,
+  43.63805389404297,
+  41.8956413269043
+ ],
+ "anomaly_index_per_class": [
+  -0.994959831237793,
+  0.674490749835968,
+  0.0,
+  -0.4953916668891907,
+  -0.5317419171333313,
+  -1.2218654155731201,
+  -0.25802215933799744,
+  2.240600347518921,
+  0.8159798979759216,
+  0.9152554273605347
+ ]
+}

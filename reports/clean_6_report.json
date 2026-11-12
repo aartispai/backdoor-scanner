@@ -1,0 +1,69 @@
+{
+ "model": "clean_6",
+ "verdict": "NO STRONG EVIDENCE OF BACKDOOR",
+ "probability_backdoored": 0.22239841269485605,
+ "scoring_mode": "UNCALIBRATED heuristic (run make_zoo.py first)",
+ "suspected_target_class": 7,
+ "clean_accuracy": 0.0820000022649765,
+ "features": {
+  "nc_anomaly": 3.663559675216675,
+  "nc_asr_gap": 0.05861709057353437,
+  "nc_l1_ratio": 0.5447975570131031,
+  "skew": 0.12890625,
+  "abs_anom": 1.2077369689941406,
+  "strip_gap": 0.6754174528048656,
+  "act_auc": 0.8543975903614458,
+  "act_cluster": 0.8303886925795053
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": false,
+   "detail": "class 7: mask-size anomaly index 3.66 (>2 suspicious); using only 3% of pixels its trigger still flips 7% of fresh clean inputs vs 1% for the median class; mask is 0.54x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": false,
+   "detail": "a single random patch pushed 13% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": true,
+   "detail": "under blending, triggered inputs keep 68% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": false,
+   "detail": "one label is driven by a single channel with outlier elevation score 1.21"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": false,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 0.85, cluster agreement 0.83)"
+  }
+ ],
+ "mask_l1_per_class": [
+  475.3208312988281,
+  488.3285827636719,
+  416.89361572265625,
+  279.7960510253906,
+  474.5815734863281,
+  467.21405029296875,
+  561.3169555664062,
+  247.07855224609375,
+  369.4913330078125,
+  439.8331604003906
+ ],
+ "anomaly_index_per_class": [
+  -0.674490749835968,
+  -0.9217205047607422,
+  0.43599680066108704,
+  3.041719675064087,
+  -0.6604401469230652,
+  -0.5204105377197266,
+  -2.308962345123291,
+  3.663559675216675,
+  1.3369407653808594,
+  0.0
+ ]
+}

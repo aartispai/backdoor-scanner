@@ -83,6 +83,19 @@ The command scans the selected model using clean reference examples, prints a ve
 
 The default dataset is `cifar10`, the default architecture is `smallcnn`, and the default aggregator path is `zoo/aggregator.joblib`.
 
+## Scan a Hugging Face model
+
+```powershell
+python scan.py --hf aaraki/vit-base-patch16-224-in21k-finetuned-cifar10 --dataset cifar10 --aggregator zoo_cifarggregator.joblib
+```
+
+Works with `transformers` image-classification models (Hub id or local folder). Weights are loaded from **safetensors only** with `trust_remote_code` off, so scanning an untrusted repo cannot run its code; pickle-only repos are refused. Use `--revision <commit>` to pin a version.
+
+- Reference images are resized to the model's input size (usually 224px). For models whose classes differ from `--dataset` (e.g. ImageNet), pass `--images path	o\clean_images`.
+- Models with more than 50 classes search a subset (the most-predicted classes plus a random sample); override with `--max-classes`.
+- Clean accuracy is reported as n/a (label order is not matched).
+- Caveats: the aggregator was calibrated on small 32px CNNs, so scores on large transformers are rough guidance. Neuron elevation samples 128 channels of the last convolution (the patch embedding in a ViT). A 224px scan on a laptop GPU takes minutes.
+
 ## Try it in Streamlit
 
 ```powershell

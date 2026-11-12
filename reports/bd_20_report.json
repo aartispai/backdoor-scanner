@@ -1,0 +1,69 @@
+{
+ "model": "bd_20",
+ "verdict": "SUSPICIOUS - MANUAL REVIEW",
+ "probability_backdoored": 0.490920958518982,
+ "scoring_mode": "UNCALIBRATED heuristic (run make_zoo.py first)",
+ "suspected_target_class": 7,
+ "clean_accuracy": 0.7120000123977661,
+ "features": {
+  "nc_anomaly": 0.964888870716095,
+  "nc_asr_gap": 0.2396901249885559,
+  "nc_l1_ratio": 0.6987521044032455,
+  "skew": 0.44140625,
+  "abs_anom": 5.939963340759277,
+  "strip_gap": 0.8659351417661513,
+  "act_auc": 0.9993181818181818,
+  "act_cluster": 0.9849624060150376
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": false,
+   "detail": "class 7: mask-size anomaly index 0.96 (>2 suspicious); using only 3% of pixels its trigger still flips 88% of fresh clean inputs vs 64% for the median class; mask is 0.70x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": false,
+   "detail": "a single random patch pushed 44% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": true,
+   "detail": "under blending, triggered inputs keep 87% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": true,
+   "detail": "one label is driven by a single channel with outlier elevation score 5.94"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": true,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 1.00, cluster agreement 0.98)"
+  }
+ ],
+ "mask_l1_per_class": [
+  56.95611572265625,
+  44.607887268066406,
+  42.8914909362793,
+  51.54582214355469,
+  55.614376068115234,
+  72.90682983398438,
+  52.30711364746094,
+  33.59380340576172,
+  38.995479583740234,
+  34.048240661621094
+ ],
+ "anomaly_index_per_class": [
+  -1.0817666053771973,
+  0.0,
+  0.15036490559577942,
+  -0.6077978014945984,
+  -0.9642235040664673,
+  -2.4791290760040283,
+  -0.674490749835968,
+  0.964888870716095,
+  0.4916749894618988,
+  0.9250778555870056
+ ]
+}

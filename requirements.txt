@@ -6,3 +6,5 @@ matplotlib
 joblib
 streamlit
 pyarrow
+transformers
+safetensors

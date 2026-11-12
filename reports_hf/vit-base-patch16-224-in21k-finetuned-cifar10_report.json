@@ -1,0 +1,81 @@
+{
+ "model": "vit-base-patch16-224-in21k-finetuned-cifar10",
+ "verdict": "NO STRONG EVIDENCE OF BACKDOOR",
+ "probability_backdoored": 0.006000232842218626,
+ "scoring_mode": "calibrated ensemble",
+ "suspected_target_class": 6,
+ "clean_accuracy": null,
+ "classes_searched": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "features": {
+  "nc_anomaly": 0.674490749835968,
+  "nc_asr_gap": 0.1876351237297058,
+  "nc_l1_ratio": 0.821694472959241,
+  "skew": 0.05078125,
+  "abs_anom": 1.1924991607666016,
+  "strip_gap": 0.20713110649302485,
+  "act_auc": 0.5081481481481481,
+  "act_cluster": 0.6653543307086613
+ },
+ "evidence": [
+  {
+   "detector": "Trigger search (Neural Cleanse)",
+   "fired": false,
+   "detail": "class 6: mask-size anomaly index 0.67 (>2 suspicious); using only 3% of pixels its trigger still flips 76% of fresh clean inputs vs 57% for the median class; mask is 0.82x the median class mask"
+  },
+  {
+   "detector": "Behavioural: random-patch hijack",
+   "fired": false,
+   "detail": "a single random patch pushed 5% of inputs into one class"
+  },
+  {
+   "detector": "Behavioural: STRIP entropy test",
+   "fired": false,
+   "detail": "under blending, triggered inputs keep 21% lower entropy than clean ones (trigger survives blending)"
+  },
+  {
+   "detector": "Activation: neuron elevation (ABS-style)",
+   "fired": false,
+   "detail": "one label is driven by a single channel with outlier elevation score 1.19"
+  },
+  {
+   "detector": "Activation: spectral signature / clustering",
+   "fired": false,
+   "detail": "triggered inputs separate from genuine target inputs (spectral AUC 0.51, cluster agreement 0.67)"
+  }
+ ],
+ "mask_l1_per_class": [
+  915.9989624023438,
+  1190.08056640625,
+  937.699951171875,
+  929.271728515625,
+  1115.67236328125,
+  1396.7886962890625,
+  855.3289794921875,
+  1611.528076171875,
+  966.19384765625,
+  1426.673095703125
+ ],
+ "anomaly_index_per_class": [
+  0.305380642414093,
+  -1.3621044158935547,
+  0.17335401475429535,
+  0.2246304750442505,
+  -0.9094123244285583,
+  -2.6196959018707275,
+  0.674490749835968,
+  -3.9261488914489746,
+  0.0,
+  -2.8015096187591553
+ ]
+}

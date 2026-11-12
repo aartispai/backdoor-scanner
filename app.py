@@ -25,7 +25,7 @@ if up and st.button("Run security scan", type="primary"):
     else: prob, mode = heuristic(res["features"]), "uncalibrated heuristic"
     rep = make_report(up.name.rsplit(".", 1)[0], res, prob, mode, tempfile.mkdtemp())
     (st.error if prob >= .8 else st.warning if prob >= .4 else st.success)(f"{rep['verdict']}  |  P(backdoor) = {prob:.2f}  |  suspected target class: {rep['suspected_target_class']}")
-    st.caption(f"Scoring: {mode}. Clean accuracy on scan set: {res['clean_acc']:.1%}")
+    st.caption(f"Scoring: {mode}. Clean accuracy on scan set: {'n/a' if res['clean_acc'] is None else format(res['clean_acc'], '.1%')}")
     st.subheader("Evidence")
     for e in rep["evidence"]: st.markdown(("FIRED " if e["fired"] else "quiet ") + f"**{e['detector']}** - {e['detail']}")
     st.subheader("Reconstructed trigger"); st.image(rep["trigger_png"])
